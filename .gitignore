@@ -1,0 +1,11 @@
+node_modules/
+dist/
+public/
+.wrangler/
+.dev.vars
+*.log
+.DS_Store
+
+# Output directories (contain personalized content)
+evaluations/
+cards/
