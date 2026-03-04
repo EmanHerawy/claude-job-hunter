@@ -71,7 +71,7 @@ Run `/build-profile` to generate your profile automatically from your resume, Gi
 /build-profile "~/resume.pdf" "~/evidence/" "https://linkedin.com/in/your-profile" "your-github-username"
 ```
 
-Or edit `profile/candidate-profile.md` manually. This is the core data source all commands use. The more honest and specific you are (especially the "Honest Considerations" section), the better the outputs.
+Or edit your profile (e.g., `profile/default.md`) manually using `profile/candidate-profile.md` as the template. Your profile is the core data source all commands use. The more honest and specific you are (especially the "Honest Considerations" section), the better the outputs.
 
 ### 4. Use them
 
@@ -83,6 +83,9 @@ Open Claude Code and run:
 
 # Search job boards and auto-evaluate matches
 /job-search "Anthropic, Cloudflare" "security, platform"
+
+# Or search all watchlist companies with no args
+/job-search
 
 # Before applying — should I bother?
 /should-i-apply "~/resume.pdf" "Anthropic" "Security Engineer" "https://job-url.com" "~/evidence/"
@@ -109,9 +112,9 @@ Open Claude Code and run:
 
 **Purpose:** Generate your candidate profile automatically instead of filling in the template by hand. The agent extracts, researches, and synthesizes — you validate and add the human context.
 
-**Usage:** `/build-profile "resume-path" "evidence-dir" "linkedin-url" "github-usernames"`
+**Usage:** `/build-profile "resume-path" "evidence-dir" "linkedin-url" "github-usernames" "profile-name"`
 
-Arguments 2-4 are optional. Multiple GitHub usernames can be comma-separated (e.g., personal + work accounts).
+Arguments 2-5 are optional. Multiple GitHub usernames can be comma-separated (e.g., personal + work accounts). Profile name defaults to `default` (see [Multi-Profile Support](#multi-profile-support)).
 
 **How it works:**
 1. **Ingests all materials** — reads resume, evidence directory (cover letters, publications, project docs, LinkedIn export, recommendations, performance reviews), catalogs what it found
@@ -137,9 +140,9 @@ Supports **update mode**: if a profile exists, merges new information and re-run
 
 **Purpose:** Search Ashby and Greenhouse public job board APIs for matching roles, filter across multiple dimensions, and auto-evaluate approved matches — batch discovery instead of one-at-a-time with `/should-i-apply`.
 
-**Usage:** `/job-search "company1, company2" "role-keywords"`
+**Usage:** `/job-search "company1, company2" "role-keywords" "profile-name"`
 
-Both arguments are optional. Falls back to your watchlist (`WATCHLIST.md`) or interactive prompts.
+All arguments are optional. Falls back to your watchlist (`WATCHLIST.md`) or interactive prompts. Run with no args to search all watchlist companies.
 
 **How it works:**
 1. **Discovers ATS platforms** — tries Ashby and Greenhouse APIs with token variants, falls back to WebSearch for the careers page
@@ -304,7 +307,7 @@ claude-job-hunter/
 │   └── player-card.md               # /player-card
 ├── resources/                       # Research checklists and references
 ├── examples/                        # Example outputs
-└── profile/                         # Template (copied to work dir on setup)
+└── profile/                         # Profile template (user profiles are gitignored)
 ```
 
 **Working directory** (your personal data — defaults to repo dir, or custom):
@@ -314,7 +317,10 @@ claude-job-hunter/
 ├── WATCHLIST.md                     # /job-search target companies and filters
 ├── JOB_SEARCH_LOG.md               # /job-search run history
 ├── profile/
-│   └── candidate-profile.md         # Your profile
+│   ├── candidate-profile.md         # Template (read-only reference)
+│   ├── default.md                   # Your default profile
+│   ├── security.md                  # Optional: security-focused profile
+│   └── leadership.md               # Optional: leadership-focused profile
 ├── evaluations/                     # /should-i-apply, /job-search, etc.
 │   └── [company]-[role]/
 │       ├── SCORECARD.md
@@ -343,9 +349,70 @@ The commands cover the full job search lifecycle:
 
 Each command follows a multi-phase workflow with user confirmation between phases. Outputs accumulate in the same `evaluations/[company]-[role]/` directory, building a complete picture over time.
 
+## Multi-Profile Support
+
+You can maintain multiple profiles tailored to different role types (e.g., security-focused, leadership-focused, IC-focused). All profiles live in the `profile/` directory alongside the `candidate-profile.md` template.
+
+### Creating profiles
+
+```bash
+# Build a named profile from your resume
+/build-profile "~/resume.pdf" "" "" "" "security"
+
+# Build another profile with a different emphasis
+/build-profile "~/resume.pdf" "~/leadership-evidence/" "" "" "leadership"
+```
+
+### Using profiles
+
+Every command accepts an optional profile name as its last argument:
+
+```bash
+/should-i-apply "~/resume.pdf" "Anthropic" "Security Engineer" "" "" "security"
+/player-card "anthropic" "Security Engineer" "https://..." "security"
+/mock-interview "Anthropic" "Security Engineer" "technical" "security"
+```
+
+### Setting a default
+
+Edit `~/.claude/.claude-job-hunter.conf` and set:
+
+```
+ACTIVE_PROFILE=security
+```
+
+All commands will use `profile/security.md` without needing the profile argument.
+
+### Resolution order
+
+When a command needs your profile, it checks:
+
+1. **Explicit argument** — profile name passed to the command
+2. **Config default** — `ACTIVE_PROFILE` in `~/.claude/.claude-job-hunter.conf`
+3. **Auto-detect** — scans `profile/` for `.md` files (excluding the template):
+   - One profile found → uses it automatically
+   - Multiple found → asks you to pick
+   - None found → prompts you to run `/build-profile`
+
+### File layout
+
+```
+profile/
+├── candidate-profile.md    # Template (tracked in git, read-only reference)
+├── default.md              # Your default profile (gitignored)
+├── security.md             # Security-focused variant (gitignored)
+└── leadership.md           # Leadership-focused variant (gitignored)
+```
+
+User profiles (`*.md` except `candidate-profile.md`) are gitignored to keep personal data out of the repo.
+
+### Migration
+
+If you created your profile before multi-profile support, running `/setup` again will automatically migrate `candidate-profile.md` → `default.md` and restore the template.
+
 ## Tips
 
-- **Start with `/build-profile`.** Let the agent build your profile from your resume and web presence. The candidate interview phase asks the hard questions that make everything else work.
+- **Start with `/build-profile`.** Let the agent build your profile from your resume and web presence. The candidate interview phase asks the hard questions that make everything else work. Create multiple profiles for different role types if needed.
 - **Use `/job-search` for batch discovery.** Set up your watchlist with target companies and filters, then run periodically to catch new postings. It deduplicates across runs so you only see what's new.
 - **Be honest in your candidate profile.** The "Honest Considerations" section makes SWOT analysis genuinely useful. Generic strengths produce generic outputs.
 - **Use the evidence directory.** The more context you give (cover letters, project docs, publications), the stronger the evidence mapping in scorecards and interview prep.

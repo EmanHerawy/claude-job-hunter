@@ -4,16 +4,17 @@ Generate a comprehensive, tailored candidate player card for a target company an
 
 ## Inputs
 
-**Usage:** `/player-card "company" "role" "url job description"`
+**Usage:** `/player-card "company" "role" "url job description" "profile-name"`
 
-Parse `$ARGUMENTS` as three quoted strings:
-- **First quoted string** — Target company name (e.g., `"anthropic"`)
-- **Second quoted string** — Target role title (e.g., `"Security Engineer"`)
-- **Third quoted string** — URL to the job description posting (e.g., `"https://boards.greenhouse.io/..."`)
+Parse `$ARGUMENTS` as up to four quoted strings:
+- **First quoted string** (required) — Target company name (e.g., `"anthropic"`)
+- **Second quoted string** (required) — Target role title (e.g., `"Security Engineer"`)
+- **Third quoted string** (required) — URL to the job description posting (e.g., `"https://boards.greenhouse.io/..."`)
+- **Fourth quoted string** (optional) — Profile name (e.g., `"default"`, `"security"`). See Profile Resolution below.
 
 Example: `/player-card "anthropic" "Security Engineer" "https://boards.greenhouse.io/anthropic/jobs/12345"`
 
-If any argument is missing, ask the user for it. Do NOT proceed without all three.
+If any of the first three arguments is missing, ask the user for it. Do NOT proceed without them.
 
 Additional defaults (ask only if user wants to override):
 - **Password:** `[company][year]` (e.g., `anthropic2026`)
@@ -30,11 +31,24 @@ If the config exists, use its paths (`PROFILE_DIR`, `CARDS_DIR`, `RESOURCES_DIR`
 
 If nothing is found, ask the user to run `/setup` first or provide the path.
 
+## Profile Resolution
+
+Determine which profile to use:
+
+1. **Explicit argument:** If a profile name was passed (4th arg), use `[PROFILE_DIR]/[profile-name].md` (append `.md` if not present)
+2. **Config default:** Read `ACTIVE_PROFILE` from `~/.claude/.claude-job-hunter.conf` — if set, use `[PROFILE_DIR]/[ACTIVE_PROFILE].md`
+3. **Auto-detect:** Scan `[PROFILE_DIR]/` for `.md` files other than `candidate-profile.md`:
+   - **One found** → use it automatically
+   - **Multiple found** → list each with its first heading line, ask the user to pick
+   - **None found** → tell the user: "No profile found. Run `/build-profile` first."
+
+The resolved profile path replaces all references to `candidate-profile.md` below.
+
 ## Source Materials
 
 Read these files before starting:
 
-- **Candidate profile:** `[claude-job-hunter]/profile/candidate-profile.md`
+- **Candidate profile:** `[PROFILE_DIR]/[resolved-profile-name].md`
 - **Card architecture:** `[claude-job-hunter]/resources/card-architecture.md`
 - **Research checklist:** `[claude-job-hunter]/resources/research-checklist.md`
 

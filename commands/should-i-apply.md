@@ -4,14 +4,15 @@ Evaluate whether you should apply to a company/role. Produces a comprehensive ma
 
 ## Inputs
 
-**Usage:** `/should-i-apply "resume-path" "company" "role" "jd-url" "evidence-dir"`
+**Usage:** `/should-i-apply "resume-path" "company" "role" "jd-url" "evidence-dir" "profile-name"`
 
-Parse `$ARGUMENTS` as up to five quoted strings:
+Parse `$ARGUMENTS` as up to six quoted strings:
 - **First quoted string** (required) — Path to resume file (PDF or markdown)
 - **Second quoted string** (required) — Target company name (e.g., `"Anthropic"`)
 - **Third quoted string** (required) — Target role title (e.g., `"Security Engineer"`)
 - **Fourth quoted string** (optional) — URL to the job description posting
 - **Fifth quoted string** (optional) — Path to directory containing supporting evidence
+- **Sixth quoted string** (optional) — Profile name (e.g., `"default"`, `"security"`). See Profile Resolution below.
 
 If any required argument is missing, ask the user for it. Do NOT proceed without the first three.
 
@@ -27,11 +28,24 @@ If the config exists, use its paths (`PROFILE_DIR`, `EVALUATIONS_DIR`, `RESOURCE
 
 If nothing is found, ask the user to run `/setup` first or provide the path.
 
+## Profile Resolution
+
+Determine which profile to use:
+
+1. **Explicit argument:** If a profile name was passed (6th arg), use `[PROFILE_DIR]/[profile-name].md` (append `.md` if not present)
+2. **Config default:** Read `ACTIVE_PROFILE` from `~/.claude/.claude-job-hunter.conf` — if set, use `[PROFILE_DIR]/[ACTIVE_PROFILE].md`
+3. **Auto-detect:** Scan `[PROFILE_DIR]/` for `.md` files other than `candidate-profile.md`:
+   - **One found** → use it automatically
+   - **Multiple found** → list each with its first heading line, ask the user to pick
+   - **None found** → tell the user: "No profile found. Run `/build-profile` first."
+
+The resolved profile path replaces all references to `candidate-profile.md` below.
+
 ## Source Materials
 
 Read these files before starting:
 
-- **Candidate profile:** `[claude-job-hunter]/profile/candidate-profile.md`
+- **Candidate profile:** `[PROFILE_DIR]/[resolved-profile-name].md`
 - **Company research checklist:** `[claude-job-hunter]/resources/research-checklist.md`
 - **Interview research checklist:** `[claude-job-hunter]/resources/interview-research-checklist.md`
 
@@ -60,7 +74,7 @@ Execute these phases in order. Present findings to the user after each phase for
 ### Phase 1: Candidate Profile Ingestion
 
 1. Read the resume file provided as the first argument (PDF or markdown)
-2. Read the candidate profile at `[claude-job-hunter]/profile/candidate-profile.md`
+2. Read the candidate profile at `[PROFILE_DIR]/[resolved-profile-name].md`
 3. If an evidence directory was provided (5th arg):
    - List all files in the directory
    - Read each file (PDFs, markdown, text, etc.)

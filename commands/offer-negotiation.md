@@ -4,13 +4,14 @@ You have an offer. This skill helps you decide whether to accept, negotiate, or 
 
 ## Inputs
 
-**Usage:** `/offer-negotiation "company" "role"`
+**Usage:** `/offer-negotiation "company" "role" "profile-name"`
 
-Parse `$ARGUMENTS` as two quoted strings:
+Parse `$ARGUMENTS` as up to three quoted strings:
 - **First quoted string** (required) — Company name (e.g., `"Anthropic"`)
 - **Second quoted string** (required) — Role title (e.g., `"Security Engineer"`)
+- **Third quoted string** (optional) — Profile name (e.g., `"default"`, `"security"`). See Profile Resolution below.
 
-If either is missing, ask.
+If company or role is missing, ask.
 
 ## Setup
 
@@ -22,6 +23,19 @@ If the config exists, use its paths (`PROFILE_DIR`, `EVALUATIONS_DIR`, `RESOURCE
 
 If nothing is found, ask the user to run `/setup` first or provide the path.
 
+## Profile Resolution
+
+Determine which profile to use:
+
+1. **Explicit argument:** If a profile name was passed (3rd arg), use `[PROFILE_DIR]/[profile-name].md` (append `.md` if not present)
+2. **Config default:** Read `ACTIVE_PROFILE` from `~/.claude/.claude-job-hunter.conf` — if set, use `[PROFILE_DIR]/[ACTIVE_PROFILE].md`
+3. **Auto-detect:** Scan `[PROFILE_DIR]/` for `.md` files other than `candidate-profile.md`:
+   - **One found** → use it automatically
+   - **Multiple found** → list each with its first heading line, ask the user to pick
+   - **None found** → tell the user: "No profile found. Run `/build-profile` first."
+
+The resolved profile path replaces all references to `candidate-profile.md` below.
+
 ## Existing Context
 
 This skill is most powerful when prior skills have been run. Before starting, check for:
@@ -29,7 +43,7 @@ This skill is most powerful when prior skills have been run. Before starting, ch
 - `[claude-job-hunter]/evaluations/[company]-[role-slug]/SCORECARD.md` — how much they want this role
 - `[claude-job-hunter]/evaluations/[company]-[role-slug]/INTERVIEW_LOG.md` — how interviews went, signals
 - `[claude-job-hunter]/evaluations/[company]-[role-slug]/COMPANY_INTEL.md` — company context
-- `[claude-job-hunter]/profile/candidate-profile.md` — candidate background
+- `[PROFILE_DIR]/[resolved-profile-name].md` — candidate background
 
 Read whatever exists. If `COMP_RESEARCH.md` doesn't exist, recommend running `/comp-research` first but proceed anyway — gather essential market data inline.
 

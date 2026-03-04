@@ -65,6 +65,16 @@ cp [repo]/profile/candidate-profile.md [work-dir]/profile/candidate-profile.md
 
 If the profile already exists in the working directory, do NOT overwrite it.
 
+#### Profile migration (multi-profile support)
+
+Check if `[work-dir]/profile/candidate-profile.md` exists and contains real content (not just the template — look for absence of placeholder text like `[Your Name]`, `[your-email]`, or `## Contact` followed by placeholder brackets):
+
+- **If it has real content:** This is a pre-multi-profile user whose profile lives in the template file. Migrate it:
+  1. Copy `[work-dir]/profile/candidate-profile.md` → `[work-dir]/profile/default.md`
+  2. Restore the template: `cp [repo]/profile/candidate-profile.md [work-dir]/profile/candidate-profile.md`
+  3. Report: `"Migrated your profile → profile/default.md (template restored)"`
+- **If it's still the template or doesn't exist:** No migration needed.
+
 ### Step 4: Write configuration
 
 Create a configuration file that all other skills read to find paths:
@@ -86,6 +96,7 @@ RESOURCES_DIR=[repo]/resources
 EXAMPLES_DIR=[repo]/examples
 WATCHLIST_FILE=[work-dir]/WATCHLIST.md
 SEARCH_LOG_FILE=[work-dir]/JOB_SEARCH_LOG.md
+ACTIVE_PROFILE=default
 ```
 
 Also create a symlink or copy the config to a well-known location so skills can find it:
@@ -141,7 +152,9 @@ Claude Job Hunter — Setup Complete
 
 Repo:           [repo path]
 Working dir:    [work-dir path]
-Profile:        [work-dir]/profile/candidate-profile.md
+Profile dir:    [work-dir]/profile/
+Active profile: [work-dir]/profile/default.md
+Template:       [work-dir]/profile/candidate-profile.md
 Evaluations:    [work-dir]/evaluations/
 Cards:          [work-dir]/cards/
 Config:         ~/.claude/.claude-job-hunter.conf
@@ -163,7 +176,7 @@ Next steps:
   3. Run /should-i-apply for a specific target role
 ```
 
-If a `candidate-profile.md` already exists and has content beyond the template, note that it's ready. If it's still the template, remind them to run `/build-profile` first.
+If a user profile (e.g., `default.md`) already exists and has content, note that it's ready. If only the template exists, remind them to run `/build-profile` first.
 
 ---
 

@@ -4,12 +4,13 @@ Simulate a realistic interview loop for a target company and role. The agent bui
 
 ## Inputs
 
-**Usage:** `/mock-interview "company" "role" "round-type"`
+**Usage:** `/mock-interview "company" "role" "round-type" "profile-name"`
 
-Parse `$ARGUMENTS` as up to three quoted strings:
+Parse `$ARGUMENTS` as up to four quoted strings:
 - **First quoted string** (required) — Company name (e.g., `"Anthropic"`)
 - **Second quoted string** (required) — Role title (e.g., `"Security Engineer"`)
 - **Third quoted string** (optional) — Specific round to practice (see Round Types below)
+- **Fourth quoted string** (optional) — Profile name (e.g., `"default"`, `"security"`). See Profile Resolution below.
 
 If company and role are missing, ask. If round type is omitted, run the full loop.
 
@@ -32,6 +33,19 @@ If the config exists, use its paths (`PROFILE_DIR`, `EVALUATIONS_DIR`, `RESOURCE
 
 If nothing is found, ask the user to run `/setup` first or provide the path.
 
+## Profile Resolution
+
+Determine which profile to use:
+
+1. **Explicit argument:** If a profile name was passed (4th arg), use `[PROFILE_DIR]/[profile-name].md` (append `.md` if not present)
+2. **Config default:** Read `ACTIVE_PROFILE` from `~/.claude/.claude-job-hunter.conf` — if set, use `[PROFILE_DIR]/[ACTIVE_PROFILE].md`
+3. **Auto-detect:** Scan `[PROFILE_DIR]/` for `.md` files other than `candidate-profile.md`:
+   - **One found** → use it automatically
+   - **Multiple found** → list each with its first heading line, ask the user to pick
+   - **None found** → tell the user: "No profile found. Run `/build-profile` first."
+
+The resolved profile path replaces all references to `candidate-profile.md` below.
+
 ## Existing Context
 
 Before building the mock, check for existing evaluation materials:
@@ -39,7 +53,7 @@ Before building the mock, check for existing evaluation materials:
 - `[claude-job-hunter]/evaluations/[company]-[role-slug]/COMPANY_INTEL.md` — company research
 - `[claude-job-hunter]/evaluations/[company]-[role-slug]/SCORECARD.md` — fit analysis, SWOT
 - `[claude-job-hunter]/evaluations/[company]-[role-slug]/INTERVIEW_LOG.md` — prior real interviews
-- `[claude-job-hunter]/profile/candidate-profile.md` — candidate background
+- `[PROFILE_DIR]/[resolved-profile-name].md` — candidate background
 
 If `INTERVIEW_PREP.md` exists, use its predicted panel and questions as the foundation — but expand and add depth. If `INTERVIEW_LOG.md` exists with prior rounds, use it to avoid repeating questions already asked in real interviews and to focus on identified weak areas.
 

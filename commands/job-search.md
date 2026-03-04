@@ -4,11 +4,12 @@ Search Ashby and Greenhouse public job board APIs for matching roles, filter acr
 
 ## Inputs
 
-**Usage:** `/job-search "company1, company2" "role-keywords"`
+**Usage:** `/job-search "company1, company2" "role-keywords" "profile-name"`
 
-Parse `$ARGUMENTS` as up to two quoted strings:
+Parse `$ARGUMENTS` as up to three quoted strings:
 - **First quoted string** (optional) — Comma-separated list of company names or board tokens to search
 - **Second quoted string** (optional) — Comma-separated role keyword filters (e.g., `"security, platform, infrastructure"`)
+- **Third quoted string** (optional) — Profile name (e.g., `"default"`, `"security"`). See Profile Resolution below.
 
 If no arguments are provided, fall back to the watchlist file. If no watchlist exists, ask the user interactively for companies and keywords.
 
@@ -19,7 +20,7 @@ Resolve paths by checking (in order):
 2. Fall back: `$CLAUDE_JOB_HUNTER_DIR` → `./claude-job-hunter/` → `~/claude-job-hunter/`
 
 Required paths:
-- **Profile:** `[PROFILE_DIR]/candidate-profile.md`
+- **Profile:** `[PROFILE_DIR]/[resolved-profile-name].md`
 - **Watchlist:** `[WORK_DIR]/WATCHLIST.md`
 - **Search log:** `[WORK_DIR]/JOB_SEARCH_LOG.md`
 - **Evaluations dir:** `[EVALUATIONS_DIR]/`
@@ -30,6 +31,19 @@ If the config exists, use its paths. Otherwise, use `[claude-job-hunter]/` as bo
 
 If nothing is found, ask the user to run `/setup` first or provide the path.
 
+## Profile Resolution
+
+Determine which profile to use:
+
+1. **Explicit argument:** If a profile name was passed (3rd arg), use `[PROFILE_DIR]/[profile-name].md` (append `.md` if not present)
+2. **Config default:** Read `ACTIVE_PROFILE` from `~/.claude/.claude-job-hunter.conf` — if set, use `[PROFILE_DIR]/[ACTIVE_PROFILE].md`
+3. **Auto-detect:** Scan `[PROFILE_DIR]/` for `.md` files other than `candidate-profile.md`:
+   - **One found** → use it automatically
+   - **Multiple found** → list each with its first heading line, ask the user to pick
+   - **None found** → tell the user: "No profile found. Run `/build-profile` first."
+
+The resolved profile path replaces all references to `candidate-profile.md` below.
+
 ## Workflow
 
 Execute these phases in order. Present findings to the user after each phase for confirmation before proceeding.
@@ -39,7 +53,7 @@ Execute these phases in order. Present findings to the user after each phase for
 ### Phase 1: Setup & Configuration
 
 1. Resolve all paths using the standard method above
-2. Read the candidate profile at `[PROFILE_DIR]/candidate-profile.md`
+2. Read the candidate profile at `[PROFILE_DIR]/[resolved-profile-name].md`
    - If no profile exists, tell the user to run `/build-profile` first
 3. Read the watchlist at `[WORK_DIR]/WATCHLIST.md`
    - If no watchlist exists, copy the template from `[REPO_DIR]/resources/watchlist-template.md` to `[WORK_DIR]/WATCHLIST.md`

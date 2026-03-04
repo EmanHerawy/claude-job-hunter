@@ -4,12 +4,13 @@ Research and build an objective compensation picture for a target role. Combines
 
 ## Inputs
 
-**Usage:** `/comp-research "company" "role" "level"`
+**Usage:** `/comp-research "company" "role" "level" "profile-name"`
 
-Parse `$ARGUMENTS` as up to three quoted strings:
+Parse `$ARGUMENTS` as up to four quoted strings:
 - **First quoted string** (required) — Company name (e.g., `"Anthropic"`)
 - **Second quoted string** (required) — Role title (e.g., `"Security Engineer"`)
 - **Third quoted string** (optional) — Expected level (e.g., `"Senior"`, `"Staff"`, `"L6"`, `"IC4"`)
+- **Fourth quoted string** (optional) — Profile name (e.g., `"default"`, `"security"`). See Profile Resolution below.
 
 If company and role are missing, ask. Level can also be determined during analysis.
 
@@ -23,6 +24,19 @@ If the config exists, use its paths (`PROFILE_DIR`, `EVALUATIONS_DIR`, `RESOURCE
 
 If nothing is found, ask the user to run `/setup` first or provide the path.
 
+## Profile Resolution
+
+Determine which profile to use:
+
+1. **Explicit argument:** If a profile name was passed (4th arg), use `[PROFILE_DIR]/[profile-name].md` (append `.md` if not present)
+2. **Config default:** Read `ACTIVE_PROFILE` from `~/.claude/.claude-job-hunter.conf` — if set, use `[PROFILE_DIR]/[ACTIVE_PROFILE].md`
+3. **Auto-detect:** Scan `[PROFILE_DIR]/` for `.md` files other than `candidate-profile.md`:
+   - **One found** → use it automatically
+   - **Multiple found** → list each with its first heading line, ask the user to pick
+   - **None found** → tell the user: "No profile found. Run `/build-profile` first."
+
+The resolved profile path replaces all references to `candidate-profile.md` below.
+
 ## Existing Context
 
 Before starting, check for existing evaluation materials:
@@ -33,7 +47,7 @@ Before starting, check for existing evaluation materials:
 - If no evaluation exists, that's fine — this skill works standalone
 
 Also read:
-- **Candidate profile:** `[claude-job-hunter]/profile/candidate-profile.md`
+- **Candidate profile:** `[PROFILE_DIR]/[resolved-profile-name].md`
 
 ## Output
 

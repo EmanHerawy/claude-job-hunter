@@ -9,3 +9,7 @@ public/
 # Output directories (contain personalized content)
 evaluations/
 cards/
+
+# User-generated profiles (template is tracked)
+profile/*.md
+!profile/candidate-profile.md

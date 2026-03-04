@@ -4,13 +4,14 @@ Automatically builds a comprehensive `candidate-profile.md` from your resume, we
 
 ## Inputs
 
-**Usage:** `/build-profile "resume-path" "evidence-dir" "linkedin-url" "github-usernames"`
+**Usage:** `/build-profile "resume-path" "evidence-dir" "linkedin-url" "github-usernames" "profile-name"`
 
-Parse `$ARGUMENTS` as up to four quoted strings:
+Parse `$ARGUMENTS` as up to five quoted strings:
 - **First quoted string** (required) — Path to resume file (PDF or markdown)
 - **Second quoted string** (optional) — Path to directory containing supporting evidence
 - **Third quoted string** (optional) — LinkedIn profile URL
 - **Fourth quoted string** (optional) — GitHub username(s), comma-separated (e.g., `"octocat"` or `"octocat,octocat-work"`)
+- **Fifth quoted string** (optional) — Profile name (e.g., `"default"`, `"security"`, `"leadership"`). See Profile Resolution below.
 
 If resume path is missing, ask. Everything else can be gathered during the process.
 
@@ -38,14 +39,29 @@ If the config exists, use its paths (`PROFILE_DIR`, `RESOURCES_DIR`, etc.). Othe
 
 If nothing is found, ask the user to run `/setup` first or provide the path.
 
+## Profile Resolution
+
+Determine which profile to use as the output filename:
+
+1. **Explicit argument:** If a profile name was passed (5th arg), use `[PROFILE_DIR]/[profile-name].md` (append `.md` if not already present)
+2. **Config default:** Read `ACTIVE_PROFILE` from `~/.claude/.claude-job-hunter.conf` — if set, use `[PROFILE_DIR]/[ACTIVE_PROFILE].md`
+3. **Auto-detect:** Scan `[PROFILE_DIR]/` for `.md` files other than `candidate-profile.md`:
+   - **One found** → use it (update mode)
+   - **Multiple found** → list each with its first heading line, ask the user to pick or provide a new name
+   - **None found** → use `[PROFILE_DIR]/default.md`
+
+**Template guard:** `candidate-profile.md` is the structural template and must never be overwritten with profile content. It is used as a reference for section structure only.
+
+The resolved profile path replaces all references to `candidate-profile.md` below.
+
 ## Output
 
 Create or overwrite:
 ```
-[claude-job-hunter]/profile/candidate-profile.md
+[PROFILE_DIR]/[resolved-profile-name].md
 ```
 
-If a profile already exists, read it first and ask the candidate whether to:
+If the resolved profile already exists, read it first and ask the candidate whether to:
 - Start fresh (overwrite)
 - Update and enrich the existing profile
 
@@ -303,7 +319,7 @@ This is what makes the profile genuinely useful. Every candidate has these — a
 
 ### Phase 4: Synthesize the Profile
 
-Now build the `candidate-profile.md` following the template structure. Every section must be populated with real content from the research and interview.
+Now build the resolved profile file following the `candidate-profile.md` template structure. Every section must be populated with real content from the research and interview.
 
 #### A. Contact
 - Pull from resume, LinkedIn, GitHub findings
@@ -399,9 +415,16 @@ For each section, ask:
 - Career narrative — does the thread make sense?
 - Skills — anything listed they wouldn't want to be tested on in an interview?
 
-After incorporating feedback, write the final `candidate-profile.md`.
+After incorporating feedback, write the final profile to the resolved path.
 
-**Output:** Confirm the profile is saved. Remind the candidate that this profile feeds into all other skills:
+**Output:** Confirm where the profile was saved (e.g., `"Profile saved to profile/security.md"`). If this is not the active profile, show how to set it as the default:
+
+```
+To make this your default profile, edit ~/.claude/.claude-job-hunter.conf:
+  ACTIVE_PROFILE=security
+```
+
+Remind the candidate that this profile feeds into all other skills:
 - `/should-i-apply` uses it for SWOT and requirements mapping
 - `/mock-interview` uses it for answer frameworks and story preparation
 - `/comp-research` uses it for leveling and current comp context
