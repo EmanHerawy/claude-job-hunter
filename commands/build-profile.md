@@ -18,10 +18,10 @@ If resume path is missing, ask. Everything else can be gathered during the proce
 - Cover letters (reveal how you position yourself)
 - Portfolio or project descriptions
 - Publications and papers
+- Conference and talk materials (slides, abstracts, proposals, recordings, speaker bios)
 - LinkedIn PDF export
 - Personal website content
 - Recommendation letters
-- Conference talk abstracts or slides
 - Blog posts
 - Certifications
 - Performance reviews (if willing to share — these are gold for impact metrics)
@@ -68,10 +68,10 @@ Read the resume file. Extract everything:
 If provided, list and read every file. For each, extract:
 - **Cover letters:** How the candidate describes themselves, what they emphasize, language and tone
 - **Publications/papers:** Titles, venues, co-authors, topics, awards
+- **Conference/talk materials:** Slide decks, talk abstracts, CFP proposals, speaker bios, session descriptions, recordings or links. Extract: topic, conference name, date, audience size/type, key message, whether it was invited/selected/keynote
 - **Project docs:** Technical depth, tools used, scale, outcomes
 - **LinkedIn export:** Recommendations received, endorsements, activity, volunteer work, education details
 - **Blog posts:** Topics they care about, technical depth, writing style
-- **Conference talks:** What they present on, audiences they address
 - **Certifications:** Issuing bodies, dates, relevance
 - **Recommendation letters:** What others say about them (themes, patterns)
 - **Performance reviews:** Impact metrics, feedback themes, growth areas
@@ -172,7 +172,42 @@ For each patent found:
 - Brief description of what it protects
 - Claims summary
 
-#### 2c. Open Source & Technical Footprint
+#### 2c. Conferences & Talks
+
+Search for speaking engagements, conference presentations, panels, workshops, and invited talks:
+
+- [ ] Conference speaker pages and schedules (search by name + "speaker" or "presenter")
+- [ ] YouTube / Vimeo recordings of talks (search name + conference names from resume)
+- [ ] SlideShare / SpeakerDeck / Google Slides published decks
+- [ ] Conference CFP (call for papers) archives with accepted talks
+- [ ] Podcast guest appearances (search name + "podcast" or "episode")
+- [ ] Webinar recordings or announcements
+- [ ] Meetup.com organizer or speaker history
+- [ ] DEF CON, Black Hat, BSides, RSA, or domain-specific conference archives
+- [ ] University guest lectures or workshop facilitation
+- [ ] Panel participation or moderator roles
+- [ ] Training or workshop delivery (corporate, conference, bootcamp)
+
+For each talk/conference found:
+- Talk title
+- Conference/event name and tier (top-tier industry, regional, meetup, internal)
+- Date
+- Format: keynote, breakout session, lightning talk, panel, workshop, podcast
+- Audience: size estimate, type (practitioners, executives, students, mixed)
+- Recording URL if available
+- Slides URL if available
+- Abstract or description
+- Whether it was invited, competitively selected, or open submission
+- Co-presenters if any
+
+**Why this matters for the profile:**
+- **Thought leadership signal:** Speaking at top conferences positions the candidate as an expert, not just a practitioner
+- **Communication skill evidence:** Talks demonstrate the ability to explain complex topics — directly relevant to interview performance
+- **Network signal:** Conference circuits reveal professional community standing
+- **Domain authority:** Repeated speaking on specific topics establishes deep expertise claims
+- **Recency signal:** Recent talks show active engagement vs. past-tense expertise
+
+#### 2d. Open Source & Technical Footprint
 
 If GitHub was not analyzed in Phase 1c (no username provided), search for it now:
 - [ ] GitHub profile search by name + company or email
@@ -185,12 +220,11 @@ Regardless:
 - [ ] Open source contributions to major projects (search GitHub for PRs by username)
 - [ ] DevPost, Kaggle, or other competition profiles
 
-#### 2d. Professional Reputation
+#### 2e. Professional Reputation
 
 - [ ] News mentions or press quotes
-- [ ] Podcast appearances
 - [ ] Industry awards or recognition
-- [ ] Meetup or conference organizer roles
+- [ ] Conference organizer or program committee roles
 - [ ] Advisory or board positions
 - [ ] Teaching or mentoring roles (adjunct faculty, bootcamp instructor, etc.)
 
@@ -201,10 +235,15 @@ Regardless:
 4. `"[FULL NAME]" site:github.com`
 5. `"[FULL NAME]" site:scholar.google.com`
 6. `"[FULL NAME]" patent site:patents.google.com`
-7. `"[FULL NAME]" site:youtube.com OR site:speakerdeck.com`
+7. `invenor:"[FULL NAME]" site:patents.google.com` (patent inventor search)
 8. `"[FULL NAME]" [UNIVERSITY] thesis OR dissertation`
-9. `"[FULL NAME]" conference OR talk OR keynote`
-10. `invenor:"[FULL NAME]" site:patents.google.com` (patent inventor search)
+9. `"[FULL NAME]" speaker OR presenter OR talk`
+10. `"[FULL NAME]" conference OR keynote OR panel`
+11. `"[FULL NAME]" site:youtube.com` (talk recordings)
+12. `"[FULL NAME]" site:speakerdeck.com OR site:slideshare.net` (slide decks)
+13. `"[FULL NAME]" podcast OR episode OR guest`
+14. `"[FULL NAME]" site:[DOMAIN-CONFERENCE-SITE]` (e.g., defcon.org, blackhat.com, rsaconference.com)
+15. `"[FULL NAME]" workshop OR training OR tutorial`
 
 **Output:** Present web research findings. Ask the candidate:
 - Is anything found inaccurate or outdated?
@@ -306,7 +345,17 @@ Now build the `candidate-profile.md` following the template structure. Every sec
 - Brief description of the contribution
 - Citation count if significant
 
-#### I. GitHub & Open Source
+#### I. Conferences & Talks
+- List all verified speaking engagements, organized by recency
+- For each: talk title, conference/event, date, format (keynote/session/panel/workshop/podcast), audience type
+- Include links to recordings and slides where available
+- Note tier level: top-tier industry (DEF CON, RSA, Black Hat, KubeCon, etc.), regional, meetup, corporate, podcast
+- Highlight invited vs. competitively selected talks
+- Note any recurring topics (establishes domain expertise themes)
+- Include panel participation, workshop delivery, and podcast appearances
+- Conference organizing or program committee roles (separate from speaking)
+
+#### J. GitHub & Open Source
 - GitHub username(s) with profile links
 - Showcase repos: 3-5 most impressive or relevant projects, each with:
   - Repo name and link
@@ -318,17 +367,17 @@ Now build the `candidate-profile.md` following the template structure. Every sec
 - Overall GitHub signal summary: activity level, languages, domain focus
 - Package registry packages authored (npm, PyPI, etc.)
 
-#### J. Certifications
+#### K. Certifications
 - Name, issuing body, date if relevant
 
-#### K. Honest Considerations
+#### L. Honest Considerations
 - This is the most important section for downstream skills
 - Draw from Phase 3d answers
 - Frame each consideration with the real context AND how the candidate thinks about it
 - These get used in SWOT analysis, interview prep, and offer negotiation
 - 5-7 items covering: overqualification risks, tenure patterns, autonomy needs, culture requirements, growth expectations, communication style, comp expectations
 
-#### L. Resume PDFs
+#### M. Resume PDFs
 - Reference the resume file path provided
 
 ---
@@ -386,6 +435,8 @@ Before finishing, verify:
 - [ ] Short tenures have honest context explanations
 - [ ] Patents have real patent numbers verified from USPTO/Google Patents
 - [ ] Publications have real venues and titles verified from Google Scholar
+- [ ] Conferences and talks are verified with links to recordings/slides where available
+- [ ] Talk tier levels are accurately categorized (top-tier vs. regional vs. meetup)
 - [ ] Honest Considerations section has 5-7 substantive items (not fluffy weaknesses)
 - [ ] Skills listed are things the candidate would be comfortable being tested on
 - [ ] Headline is specific and compelling (not generic)

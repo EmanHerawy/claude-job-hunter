@@ -95,6 +95,23 @@ List 5-7 quantified achievements. Each should have context for WHY it matters, n
 - Activity level: [active / moderate / archival]
 - Focus areas: [security tooling, infrastructure, data, etc.]
 
+## Conferences & Talks
+
+Speaking engagements, panels, workshops, podcast appearances, and other public presentations.
+
+| Talk Title | Event | Date | Format | Audience | Links |
+|-----------|-------|------|--------|----------|-------|
+| [Title] | [Conference/Event] | [Date] | Keynote / Session / Panel / Workshop / Podcast | [Audience type and size] | [Recording](url), [Slides](url) |
+| ... | ... | ... | ... | ... | ... |
+
+### Conference Organizing
+- Program committee, track chair, or organizer roles (if any)
+
+### Speaking Summary
+- Recurring topics: [themes you present on regularly]
+- Conference tier: [top-tier (DEF CON, RSA, Black Hat, etc.), regional, meetup, corporate]
+- Total talks: [approximate count]
+
 ## Patents
 1. **Patent title** (Patent number)
 
