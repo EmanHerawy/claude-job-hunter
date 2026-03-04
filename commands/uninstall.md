@@ -25,6 +25,7 @@ Check for installed components:
 
 **Symlinked commands** — look for these in `~/.claude/commands/`:
 - `build-profile.md`
+- `job-search.md`
 - `should-i-apply.md`
 - `mock-interview.md`
 - `interview-feedback.md`
@@ -53,6 +54,7 @@ The following will be removed:
 
   Slash commands (symlinks in ~/.claude/commands/):
     /build-profile
+    /job-search
     /should-i-apply
     /mock-interview
     /interview-feedback
@@ -100,7 +102,7 @@ If `~/.claude/.claude-job-hunter.conf` is itself a symlink, also remove the orig
 Claude Job Hunter — Uninstalled
 
 Removed:
-  ✓ 9 slash commands from ~/.claude/commands/
+  ✓ 10 slash commands from ~/.claude/commands/
   ✓ Config file ~/.claude/.claude-job-hunter.conf
 
 Still present (not removed):

@@ -84,6 +84,8 @@ EVALUATIONS_DIR=[work-dir]/evaluations
 CARDS_DIR=[work-dir]/cards
 RESOURCES_DIR=[repo]/resources
 EXAMPLES_DIR=[repo]/examples
+WATCHLIST_FILE=[work-dir]/WATCHLIST.md
+SEARCH_LOG_FILE=[work-dir]/JOB_SEARCH_LOG.md
 ```
 
 Also create a symlink or copy the config to a well-known location so skills can find it:
@@ -106,6 +108,7 @@ ln -sf [repo]/commands/[command].md ~/.claude/commands/[command].md
 
 Commands to install:
 - `build-profile.md` — `/build-profile`
+- `job-search.md` — `/job-search`
 - `should-i-apply.md` — `/should-i-apply`
 - `mock-interview.md` — `/mock-interview`
 - `interview-feedback.md` — `/interview-feedback`
@@ -145,6 +148,7 @@ Config:         ~/.claude/.claude-job-hunter.conf
 
 Installed commands:
   /build-profile        → Build your candidate profile from resume + evidence
+  /job-search           → Search ATS boards and auto-evaluate matches
   /should-i-apply       → Evaluate whether to apply (scorecard, SWOT, interview prep)
   /mock-interview       → Practice interview loops with feedback
   /interview-feedback   → Debrief after real interviews
@@ -155,7 +159,8 @@ Installed commands:
 
 Next steps:
   1. Run /build-profile to create your candidate profile
-  2. Run /should-i-apply for your first target role
+  2. Run /job-search to find and evaluate matching roles
+  3. Run /should-i-apply for a specific target role
 ```
 
 If a `candidate-profile.md` already exists and has content beyond the template, note that it's ready. If it's still the template, remind them to run `/build-profile` first.
