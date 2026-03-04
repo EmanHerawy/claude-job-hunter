@@ -20,7 +20,39 @@ All commands use live web research to produce outputs specific to you and the ta
 git clone https://github.com/deeso/claude-job-hunter.git ~/claude-job-hunter
 ```
 
-### 2. Build your candidate profile
+### 2. Install the slash commands
+
+Bootstrap the setup command, then let it install everything else:
+
+```bash
+mkdir -p ~/.claude/commands
+ln -sf ~/claude-job-hunter/commands/setup.md ~/.claude/commands/setup.md
+```
+
+Then open Claude Code and run:
+
+```
+/setup
+```
+
+This symlinks all 7 skills into `~/.claude/commands/` and creates the output directories. You only need to do this once (or again after pulling updates that add new commands).
+
+<details>
+<summary>Manual installation (alternative)</summary>
+
+```bash
+mkdir -p ~/.claude/commands
+ln -sf ~/claude-job-hunter/commands/build-profile.md ~/.claude/commands/build-profile.md
+ln -sf ~/claude-job-hunter/commands/should-i-apply.md ~/.claude/commands/should-i-apply.md
+ln -sf ~/claude-job-hunter/commands/mock-interview.md ~/.claude/commands/mock-interview.md
+ln -sf ~/claude-job-hunter/commands/interview-feedback.md ~/.claude/commands/interview-feedback.md
+ln -sf ~/claude-job-hunter/commands/comp-research.md ~/.claude/commands/comp-research.md
+ln -sf ~/claude-job-hunter/commands/offer-negotiation.md ~/.claude/commands/offer-negotiation.md
+ln -sf ~/claude-job-hunter/commands/player-card.md ~/.claude/commands/player-card.md
+```
+</details>
+
+### 3. Build your candidate profile
 
 Run `/build-profile` to generate your profile automatically from your resume, GitHub, and evidence:
 
@@ -29,24 +61,6 @@ Run `/build-profile` to generate your profile automatically from your resume, Gi
 ```
 
 Or edit `profile/candidate-profile.md` manually. This is the core data source all commands use. The more honest and specific you are (especially the "Honest Considerations" section), the better the outputs.
-
-### 3. Install the slash commands
-
-Symlink or copy the commands into your Claude Code commands directory:
-
-```bash
-# Create Claude commands directory if it doesn't exist
-mkdir -p ~/.claude/commands
-
-# Symlink the commands (recommended — stays in sync with repo updates)
-ln -sf ~/claude-job-hunter/commands/player-card.md ~/.claude/commands/player-card.md
-ln -sf ~/claude-job-hunter/commands/should-i-apply.md ~/.claude/commands/should-i-apply.md
-ln -sf ~/claude-job-hunter/commands/interview-feedback.md ~/.claude/commands/interview-feedback.md
-ln -sf ~/claude-job-hunter/commands/comp-research.md ~/.claude/commands/comp-research.md
-ln -sf ~/claude-job-hunter/commands/offer-negotiation.md ~/.claude/commands/offer-negotiation.md
-ln -sf ~/claude-job-hunter/commands/mock-interview.md ~/.claude/commands/mock-interview.md
-ln -sf ~/claude-job-hunter/commands/build-profile.md ~/.claude/commands/build-profile.md
-```
 
 ### 4. Use them
 
