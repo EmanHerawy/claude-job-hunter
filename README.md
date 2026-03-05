@@ -1,6 +1,6 @@
 # Claude Job Hunter
 
-AI-powered job search toolkit using [Claude Code](https://docs.anthropic.com/en/docs/claude-code) slash commands. Nine skills that cover the full job search lifecycle:
+AI-powered job search toolkit using [Claude Code](https://docs.anthropic.com/en/docs/claude-code) slash commands. Ten skills that cover the full job search lifecycle:
 
 - **`/build-profile`** — Generate your candidate profile from resume, web research, publications, patents, and supporting evidence
 - **`/job-search`** — Search ATS boards and the web for matching roles, filter, and auto-evaluate matches
@@ -10,6 +10,7 @@ AI-powered job search toolkit using [Claude Code](https://docs.anthropic.com/en/
 - **`/interview-feedback`** — Debrief after each real interview round with signal analysis, performance assessment, and next-round strategy
 - **`/comp-research`** — Build an objective compensation picture: market data, leveling, peer benchmarks, geography adjustments
 - **`/offer-negotiation`** — Evaluate an offer, build negotiation strategy with scripts, and decide whether to accept, counter, or walk
+- **`/swot-analysis`** — Research a company's strategic position, market health, and trajectory — pure company intelligence before evaluating fit
 - **`/player-card`** — Generate a password-protected Cloudflare Worker site that showcases you TO a company (deployed, shareable)
 
 All commands use live web research to produce outputs specific to you and the target company — no generic templates.
@@ -105,6 +106,12 @@ Open Claude Code and run:
 
 # Offer in hand — what's the play?
 /offer-negotiation "Anthropic" "Security Engineer"
+
+# Research a company before looking at specific roles
+/swot-analysis "Anthropic"
+
+# Focus on a specific area
+/swot-analysis "Anthropic" "security"
 
 # Not ready yet? Benchmark and build a development plan
 /skill-gap "Anthropic" "Staff Security Engineer" "https://job-url.com" "1 year"
@@ -227,6 +234,29 @@ Arguments 1 and 3-5 are optional. Company can be a specific name (`"Anthropic"`)
 - Portfolio strategy and progress tracking milestones
 
 Supports **re-run mode**: re-run to track progress, compare benchmarks over time, and adjust the plan.
+
+### `/swot-analysis`
+
+**Purpose:** Research a company's strategic position and produce a comprehensive SWOT analysis — before you even look at specific roles. Understand whether a company is worth your time.
+
+**Usage:** `/swot-analysis "company" "focus-area"`
+
+Argument 2 is optional. Focus areas: `"engineering"`, `"security"`, `"AI/ML"`, `"leadership"`, `"product"`, `"financial"`, or any custom lens.
+
+**Researches:**
+- **Business & financial health** — funding, revenue, burn rate, valuation trajectory
+- **Product & market position** — competitive landscape, market share, product quality signals
+- **Technology & engineering** — tech stack, eng blog, open source, technical debt signals
+- **People & culture** — Glassdoor/Blind patterns, leadership quality, hiring velocity, layoff history
+- **Recent news** — last 12 months of announcements, incidents, leadership changes
+
+**Produces:** `SWOT_ANALYSIS.md` in `evaluations/[company]/`:
+- Evidence-backed SWOT with durability, severity, probability, and impact ratings
+- Company health scorecard (1-10 across 8 dimensions with trend indicators)
+- Trajectory assessment (Rocketship / Steady Climber / Plateau / Crossroads / Declining / Turnaround)
+- Job seeker verdict: who thrives here, who should avoid, ideal timing, watch signals
+
+This is NOT a candidate-fit analysis (that's `/should-i-apply`). This is pure company intelligence.
 
 ### `/mock-interview`
 
@@ -351,7 +381,8 @@ claude-job-hunter/
 │   ├── comp-research.md             # /comp-research
 │   ├── offer-negotiation.md         # /offer-negotiation
 │   ├── player-card.md               # /player-card
-│   └── skill-gap.md                 # /skill-gap
+│   ├── skill-gap.md                 # /skill-gap
+│   └── swot-analysis.md             # /swot-analysis
 ├── resources/                       # Research checklists and references
 ├── examples/                        # Example outputs
 └── profile/                         # Profile template (user profiles are gitignored)
@@ -377,7 +408,8 @@ claude-job-hunter/
 │       ├── COMP_RESEARCH.md
 │       ├── NEGOTIATION_STRATEGY.md
 │       ├── MOCK_INTERVIEW.md
-│       └── SKILL_GAP.md
+│       ├── SKILL_GAP.md
+│       └── SWOT_ANALYSIS.md
 └── cards/                           # /player-card outputs
     └── [company]-[year]/
 ```
@@ -388,13 +420,14 @@ The commands cover the full job search lifecycle:
 
 1. **`/build-profile`** — Onboarding: build your candidate profile from resume + web research
 2. **`/job-search`** — Discovery: search ATS boards and the web, filter, and batch-evaluate matches
-3. **`/should-i-apply`** — Pre-application: research, SWOT analysis, interview prep (single role)
-4. **`/skill-gap`** — Development: benchmark skills against ideal, build a time-based plan to close gaps
-5. **`/mock-interview`** — Pre-interview: practice with researched questions, get feedback
-6. **`/interview-feedback`** — During process: debrief each round, read signals, prep for next
-7. **`/comp-research`** — Pre-offer: build objective comp picture from market data
-8. **`/offer-negotiation`** — Offer stage: evaluate, strategize, negotiate with scripts
-9. **`/player-card`** — Anytime: deploy a personalized showcase site
+3. **`/swot-analysis`** — Company research: strategic SWOT of the company itself before evaluating fit
+4. **`/should-i-apply`** — Pre-application: research, SWOT analysis, interview prep (single role)
+5. **`/skill-gap`** — Development: benchmark skills against ideal, build a time-based plan to close gaps
+6. **`/mock-interview`** — Pre-interview: practice with researched questions, get feedback
+7. **`/interview-feedback`** — During process: debrief each round, read signals, prep for next
+8. **`/comp-research`** — Pre-offer: build objective comp picture from market data
+9. **`/offer-negotiation`** — Offer stage: evaluate, strategize, negotiate with scripts
+10. **`/player-card`** — Anytime: deploy a personalized showcase site
 
 Each command follows a multi-phase workflow with user confirmation between phases. Outputs accumulate in the same `evaluations/[company]-[role]/` directory, building a complete picture over time.
 
@@ -470,7 +503,7 @@ If you created your profile before multi-profile support, running `/setup` again
 - **Debrief every round.** Run `/interview-feedback` after each real interview while details are fresh. The running log across rounds reveals patterns.
 - **Run comp research early.** `/comp-research` before the offer means you negotiate from data, not gut feelings. The research feeds directly into `/offer-negotiation`.
 - **Not ready yet?** Run `/skill-gap` to benchmark your skills against a target role and build a development plan. Re-run periodically to track progress.
-- **Full lifecycle.** `/build-profile` → `/job-search` or `/should-i-apply` → `/skill-gap` (if gaps found) → `/mock-interview` → `/interview-feedback` (per round) → `/comp-research` → `/offer-negotiation` → `/player-card` if you want to send something impressive.
+- **Full lifecycle.** `/build-profile` → `/job-search` or `/swot-analysis` → `/should-i-apply` → `/skill-gap` (if gaps found) → `/mock-interview` → `/interview-feedback` (per round) → `/comp-research` → `/offer-negotiation` → `/player-card` if you want to send something impressive.
 
 ## Requirements
 

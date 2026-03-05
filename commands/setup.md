@@ -127,6 +127,7 @@ Commands to install:
 - `offer-negotiation.md` — `/offer-negotiation`
 - `player-card.md` — `/player-card`
 - `skill-gap.md` — `/skill-gap`
+- `swot-analysis.md` — `/swot-analysis`
 - `uninstall.md` — `/uninstall`
 
 ### Step 6: Verify installation
@@ -170,6 +171,7 @@ Installed commands:
   /offer-negotiation    → Offer evaluation and negotiation strategy
   /player-card          → Deploy a candidate showcase site
   /skill-gap            → Benchmark skills and build a development plan
+  /swot-analysis        → Company strategic intelligence (SWOT) report
   /uninstall            → Remove all Claude Job Hunter skills
 
 Next steps:
