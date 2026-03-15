@@ -1,10 +1,14 @@
 # Claude Job Hunter
 
-AI-powered job search toolkit using [Claude Code](https://docs.anthropic.com/en/docs/claude-code) slash commands. Ten skills that cover the full job search lifecycle:
+AI-powered job search toolkit using [Claude Code](https://docs.anthropic.com/en/docs/claude-code) slash commands. Fourteen skills that cover the full job search lifecycle — from profile building to applying with a tailored LaTeX resume and cover letter:
 
-- **`/build-profile`** — Generate your candidate profile from resume, web research, publications, patents, and supporting evidence
+- **`/build-profile`** — Generate your candidate profile from resume, GitHub (skills verified against real code), LinkedIn, and supporting evidence
 - **`/job-search`** — Search ATS boards and the web for matching roles, filter, and auto-evaluate matches
 - **`/should-i-apply`** — Evaluate WHETHER you should apply, with a scorecard, sentiment-driven SWOT, and deep interview prep
+- **`/ats-check`** — Audit resume vs. JD for ATS compatibility: keyword coverage score, formatting safety, section quality, prioritized fix list
+- **`/tailor-resume`** — Generate an ATS-optimized tailored resume in LaTeX format; accepts job via URL or pasted JD text
+- **`/tailor-cover-letter`** — Generate a tailored cover letter in LaTeX format; hook → why them → why you → CTA structure
+- **`/apply`** — Full application orchestrator: ingest job (URL or paste), ATS check, tailor resume + cover letter, save to `applications/[company-role]/`, track status
 - **`/skill-gap`** — Build an ideal candidate profile, benchmark your skills against it, and create a time-based development plan
 - **`/mock-interview`** — Practice interview loops with researched questions, written answers, and critical feedback on content and communication
 - **`/interview-feedback`** — Debrief after each real interview round with signal analysis, performance assessment, and next-round strategy
@@ -56,6 +60,10 @@ mkdir -p ~/.claude/commands
 ln -sf ~/claude-job-hunter/commands/build-profile.md ~/.claude/commands/build-profile.md
 ln -sf ~/claude-job-hunter/commands/job-search.md ~/.claude/commands/job-search.md
 ln -sf ~/claude-job-hunter/commands/should-i-apply.md ~/.claude/commands/should-i-apply.md
+ln -sf ~/claude-job-hunter/commands/ats-check.md ~/.claude/commands/ats-check.md
+ln -sf ~/claude-job-hunter/commands/tailor-resume.md ~/.claude/commands/tailor-resume.md
+ln -sf ~/claude-job-hunter/commands/tailor-cover-letter.md ~/.claude/commands/tailor-cover-letter.md
+ln -sf ~/claude-job-hunter/commands/apply.md ~/.claude/commands/apply.md
 ln -sf ~/claude-job-hunter/commands/mock-interview.md ~/.claude/commands/mock-interview.md
 ln -sf ~/claude-job-hunter/commands/interview-feedback.md ~/.claude/commands/interview-feedback.md
 ln -sf ~/claude-job-hunter/commands/comp-research.md ~/.claude/commands/comp-research.md
@@ -94,6 +102,22 @@ Open Claude Code and run:
 
 # Before applying — should I bother?
 /should-i-apply "~/resume.pdf" "Anthropic" "Security Engineer" "https://job-url.com" "~/evidence/"
+
+# ATS audit: keyword coverage, formatting safety, score (0-100)
+/ats-check "~/resume.pdf" "https://job-url.com"
+
+# Or paste JD text directly
+/ats-check "~/resume.pdf" "Senior Security Engineer at Anthropic, requires Rust, Python..."
+
+# Generate a tailored resume in LaTeX (URL or pasted JD)
+/tailor-resume "~/resume.pdf" "https://job-url.com"
+
+# Generate a tailored cover letter in LaTeX
+/tailor-cover-letter "" "https://job-url.com"
+
+# Full application in one command (URL or pasted JD text)
+/apply "https://job-url.com"
+/apply "Senior Security Engineer at Anthropic, requires Rust..."
 
 # Practice before the real thing
 /mock-interview "Anthropic" "Security Engineer" "technical"
@@ -210,6 +234,81 @@ evaluations/[company]-[role-slug]/
 - Interview prep with specific answer frameworks drawn from YOUR experience
 - "Questions to ask them" with what good and bad answers look like
 - Culture & values alignment map between you and the company
+
+### `/ats-check`
+
+**Purpose:** Audit a resume against a specific job description for ATS (Applicant Tracking System) compatibility before applying. Run before tailoring to know what to fix, or after to verify the score improved.
+
+**Usage:** `/ats-check "resume-path" "jd-url-or-text" "profile-name"`
+
+Accepts job as either a **URL** (fetched live) or **pasted JD text** directly.
+
+**How it works:**
+1. **Keyword extraction** — pulls all JD keywords into Tier 1 (required, eliminates if missing), Tier 2 (preferred, score boost), Tier 3 (context/domain fluency)
+2. **Coverage scoring** — marks each keyword ✅ Present / 🔄 Implied (you have the skill but didn't name it) / ❌ Missing
+3. **Formatting safety audit** — checks for ATS killers: multi-column layout, tables, text boxes, headers/footers with important info, non-standard section names, inconsistent dates
+4. **Section quality check** — summary keywords, bullet action verbs, quantified outcomes, dedicated skills section
+5. **Scores 0–100** with verdict: HIGH RISK / AT RISK / ADEQUATE / STRONG
+6. **Prioritized fix list** with exact before/after rewrites for every issue
+
+**Produces:** `ATS_CHECK.md` in the evaluation or application directory.
+
+### `/tailor-resume`
+
+**Purpose:** Generate an ATS-optimized, role-specific resume in LaTeX format — not a generic template fill, but a fully tailored document where every bullet, keyword, and summary sentence is targeted at the specific JD.
+
+**Usage:** `/tailor-resume "resume-path" "jd-url-or-text" "profile-name" "output-dir"`
+
+Accepts job as either a **URL** or **pasted JD text**.
+
+**How it works:**
+1. Extracts all JD keywords and maps each to the candidate's actual experience (DIRECT / RENAME / DEMONSTRATE / GAP)
+2. Generates tailored summary, skills section, experience bullets, and projects — all seeded with Tier 1 keywords
+3. Populates `resources/resume-template.tex` with candidate-specific content (no fake data — only what's in the profile)
+4. Runs ATS self-check to verify Tier 1 coverage improved
+5. Saves `resume-tailored.tex` + `TAILORING_NOTES.md` (what changed and why)
+
+**Output:** `[application-dir]/resume-tailored.tex` + compile instructions (`pdflatex resume-tailored.tex`).
+
+Requires TeX Live / MacTeX to compile: `brew install --cask mactex-no-gui` or upload to overleaf.com.
+
+### `/tailor-cover-letter`
+
+**Purpose:** Generate a tailored cover letter in LaTeX format. Four-paragraph structure: specific hook → why them (one real detail) → why you (evidence-backed achievements) → confident CTA.
+
+**Usage:** `/tailor-cover-letter "resume-path" "jd-url-or-text" "profile-name" "output-dir"`
+
+Accepts job as either a **URL** or **pasted JD text**.
+
+**Key rules enforced:**
+- No "I am writing to apply for..." opener
+- Paragraph 2 must reference something real and specific about the company (product decision, engineering blog post, public architecture choice) — never generic praise
+- Paragraph 3 uses actual achievements with metrics, not generic claims
+- Reads `COMPANY_INTEL.md` and `SCORECARD.md` if they exist for research context
+
+**Output:** `[application-dir]/cover-letter.tex` + compile instructions.
+
+### `/apply`
+
+**Purpose:** Full application workflow in one command. Ingest a job (URL or pasted JD text), run the ATS audit, tailor the resume, generate the cover letter, save all artifacts to a structured application directory, and track status.
+
+**Usage:** `/apply "jd-url-or-text" "profile-name" "resume-path"`
+
+Accepts job as either a **URL** or **pasted JD text** — this is the primary input.
+
+**Produces:**
+```
+applications/[company-role]/
+├── JD.md                    # Saved job description
+├── ATS_CHECK.md             # ATS audit (pre-tailoring score)
+├── resume-tailored.tex      # ATS-optimized LaTeX resume
+├── cover-letter.tex         # Tailored LaTeX cover letter
+└── APPLICATION.md           # Status tracker + log
+```
+
+**Application status lifecycle:** `PREPARING` → `READY` → `APPLIED` → `PHONE_SCREEN` → `INTERVIEWING` → `OFFER` → `ACCEPTED / REJECTED / WITHDRAWN`
+
+The quick fit scan at the start warns you if Tier 1 keyword coverage is below 50% before investing time in the full application.
 
 ### `/skill-gap`
 
@@ -376,6 +475,10 @@ claude-job-hunter/
 │   ├── build-profile.md             # /build-profile
 │   ├── job-search.md                # /job-search
 │   ├── should-i-apply.md            # /should-i-apply
+│   ├── ats-check.md                 # /ats-check
+│   ├── tailor-resume.md             # /tailor-resume
+│   ├── tailor-cover-letter.md       # /tailor-cover-letter
+│   ├── apply.md                     # /apply
 │   ├── mock-interview.md            # /mock-interview
 │   ├── interview-feedback.md        # /interview-feedback
 │   ├── comp-research.md             # /comp-research
@@ -383,7 +486,10 @@ claude-job-hunter/
 │   ├── player-card.md               # /player-card
 │   ├── skill-gap.md                 # /skill-gap
 │   └── swot-analysis.md             # /swot-analysis
-├── resources/                       # Research checklists and references
+├── resources/
+│   ├── resume-template.tex          # ATS-safe LaTeX resume base
+│   ├── cover-letter-template.tex    # LaTeX cover letter base
+│   └── ...                          # Research checklists and references
 ├── examples/                        # Example outputs
 └── profile/                         # Profile template (user profiles are gitignored)
 ```
@@ -409,7 +515,15 @@ claude-job-hunter/
 │       ├── NEGOTIATION_STRATEGY.md
 │       ├── MOCK_INTERVIEW.md
 │       ├── SKILL_GAP.md
-│       └── SWOT_ANALYSIS.md
+│       ├── SWOT_ANALYSIS.md
+│       └── ATS_CHECK.md
+├── applications/                    # /apply outputs
+│   └── [company]-[role]/
+│       ├── JD.md
+│       ├── ATS_CHECK.md
+│       ├── resume-tailored.tex
+│       ├── cover-letter.tex
+│       └── APPLICATION.md
 └── cards/                           # /player-card outputs
     └── [company]-[year]/
 ```
@@ -418,18 +532,22 @@ claude-job-hunter/
 
 The commands cover the full job search lifecycle:
 
-1. **`/build-profile`** — Onboarding: build your candidate profile from resume + web research
+1. **`/build-profile`** — Onboarding: build your candidate profile from resume, GitHub (skills verified against real code), and LinkedIn
 2. **`/job-search`** — Discovery: search ATS boards and the web, filter, and batch-evaluate matches
 3. **`/swot-analysis`** — Company research: strategic SWOT of the company itself before evaluating fit
 4. **`/should-i-apply`** — Pre-application: research, SWOT analysis, interview prep (single role)
-5. **`/skill-gap`** — Development: benchmark skills against ideal, build a time-based plan to close gaps
-6. **`/mock-interview`** — Pre-interview: practice with researched questions, get feedback
-7. **`/interview-feedback`** — During process: debrief each round, read signals, prep for next
-8. **`/comp-research`** — Pre-offer: build objective comp picture from market data
-9. **`/offer-negotiation`** — Offer stage: evaluate, strategize, negotiate with scripts
-10. **`/player-card`** — Anytime: deploy a personalized showcase site
+5. **`/ats-check`** — Application prep: keyword coverage audit, formatting safety check, 0-100 score
+6. **`/tailor-resume`** — Application prep: ATS-optimized LaTeX resume tailored to the specific JD
+7. **`/tailor-cover-letter`** — Application prep: tailored LaTeX cover letter with company-specific research
+8. **`/apply`** — Application: full workflow orchestrator — ingest job, ATS check, tailor resume + cover letter, save and track
+9. **`/skill-gap`** — Development: benchmark skills against ideal, build a time-based plan to close gaps
+10. **`/mock-interview`** — Pre-interview: practice with researched questions, get feedback
+11. **`/interview-feedback`** — During process: debrief each round, read signals, prep for next
+12. **`/comp-research`** — Pre-offer: build objective comp picture from market data
+13. **`/offer-negotiation`** — Offer stage: evaluate, strategize, negotiate with scripts
+14. **`/player-card`** — Anytime: deploy a personalized showcase site
 
-Each command follows a multi-phase workflow with user confirmation between phases. Outputs accumulate in the same `evaluations/[company]-[role]/` directory, building a complete picture over time.
+Each command follows a multi-phase workflow with user confirmation between phases. Evaluations accumulate in `evaluations/[company]-[role]/`; applications save to `applications/[company-role]/`.
 
 ## Multi-Profile Support
 
@@ -503,7 +621,7 @@ If you created your profile before multi-profile support, running `/setup` again
 - **Debrief every round.** Run `/interview-feedback` after each real interview while details are fresh. The running log across rounds reveals patterns.
 - **Run comp research early.** `/comp-research` before the offer means you negotiate from data, not gut feelings. The research feeds directly into `/offer-negotiation`.
 - **Not ready yet?** Run `/skill-gap` to benchmark your skills against a target role and build a development plan. Re-run periodically to track progress.
-- **Full lifecycle.** `/build-profile` → `/job-search` or `/swot-analysis` → `/should-i-apply` → `/skill-gap` (if gaps found) → `/mock-interview` → `/interview-feedback` (per round) → `/comp-research` → `/offer-negotiation` → `/player-card` if you want to send something impressive.
+- **Full lifecycle.** `/build-profile` → `/job-search` or `/swot-analysis` → `/should-i-apply` → `/ats-check` → `/apply` (tailors resume + cover letter + tracks) → `/skill-gap` (if gaps found) → `/mock-interview` → `/interview-feedback` (per round) → `/comp-research` → `/offer-negotiation` → `/player-card` if you want to send something impressive.
 
 ## Requirements
 
