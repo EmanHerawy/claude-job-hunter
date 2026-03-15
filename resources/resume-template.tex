@@ -1,0 +1,186 @@
+% ============================================================
+% ATS-FRIENDLY LATEX RESUME TEMPLATE
+% claude-job-hunter — tailor-resume output base
+%
+% ATS rules enforced:
+%   - Single column (no multicol, no minipages for content)
+%   - No tables for layout
+%   - Standard section headings (text, not icons)
+%   - Hyperlinks included but not required for parsing
+%   - All text selectable (no rasterized text)
+%   - Standard fonts only
+% ============================================================
+
+\documentclass[10pt, letterpaper]{article}
+
+% --- Packages ---
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=0.75in, top=0.6in, bottom=0.6in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{microtype}
+
+% --- Color ---
+\definecolor{accent}{HTML}{1a1a2e}   % Near-black — change to brand color if desired
+\definecolor{linkcolor}{HTML}{0066cc}
+
+% --- Hyperref ---
+\hypersetup{
+  colorlinks=true,
+  urlcolor=linkcolor,
+  pdfborder={0 0 0}
+}
+
+% --- Section formatting ---
+\titleformat{\section}
+  {\large\bfseries\color{accent}}
+  {}
+  {0em}
+  {}
+  [\titlerule]
+
+\titlespacing{\section}{0pt}{10pt}{4pt}
+
+% --- List settings ---
+\setlist[itemize]{
+  leftmargin=1.5em,
+  topsep=2pt,
+  itemsep=1pt,
+  parsep=0pt
+}
+
+% --- No page numbers ---
+\pagestyle{empty}
+
+% --- Custom commands ---
+\newcommand{\resumeheader}[5]{%
+  % #1 Full name  #2 Location  #3 Phone  #4 Email  #5 LinkedIn/GitHub
+  \begin{center}
+    {\LARGE\bfseries #1}\\[4pt]
+    #2 \textbullet\ #3 \textbullet\ \href{mailto:#4}{#4}\\[2pt]
+    #5
+  \end{center}
+  \vspace{4pt}
+}
+
+\newcommand{\roleentry}[4]{%
+  % #1 Company  #2 Title  #3 Location  #4 Dates
+  \textbf{#1} \hfill \textit{#3}\\
+  \textit{#2} \hfill #4
+  \vspace{2pt}
+}
+
+\newcommand{\projectentry}[3]{%
+  % #1 Project name  #2 Tech stack  #3 URL (optional, pass {} if none)
+  \textbf{#1} \textit{(#2)}%
+  \ifx&#3&\else\ — \href{#3}{\texttt{#3}}\fi
+}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+% ---- HEADER ------------------------------------------------
+\resumeheader
+  {FULL NAME}
+  {City, Country (or Remote)}
+  {+1 (555) 000-0000}
+  {email@example.com}
+  {\href{https://linkedin.com/in/HANDLE}{linkedin.com/in/HANDLE} \textbullet\ \href{https://github.com/USERNAME}{github.com/USERNAME}}
+
+% ---- SUMMARY -----------------------------------------------
+\section{Summary}
+
+% 2–4 sentences. Tailored per job. Lead with expert role + years.
+% Keywords from JD must appear here naturally.
+TAILORED_SUMMARY_PLACEHOLDER
+
+% ---- SKILLS ------------------------------------------------
+\section{Skills}
+
+% ATS tip: use plain text list, not tables. Keywords from JD go here.
+\begin{itemize}[leftmargin=0em, label={}]
+  \item \textbf{Domain expertise:} DOMAIN_SKILL_1, DOMAIN_SKILL_2, DOMAIN_SKILL_3
+  \item \textbf{Languages:} LANG_1, LANG_2, LANG_3
+  \item \textbf{Frameworks \& tools:} TOOL_1, TOOL_2, TOOL_3
+  \item \textbf{Cloud \& infra:} CLOUD_1, CLOUD_2, CLOUD_3
+  \item \textbf{Security:} SEC_SKILL_1, SEC_SKILL_2  % remove if not relevant
+\end{itemize}
+
+% ---- EXPERIENCE --------------------------------------------
+\section{Experience}
+
+\roleentry{COMPANY\_1}{TITLE\_1}{LOCATION\_1}{START\_DATE -- END\_DATE}
+\begin{itemize}
+  \item IMPACT\_BULLET\_1 (led to QUANTIFIED\_OUTCOME)
+  \item IMPACT\_BULLET\_2 (reduced/increased X by N\%)
+  \item IMPACT\_BULLET\_3 (JD\_KEYWORD used to achieve RESULT)
+  \item IMPACT\_BULLET\_4
+\end{itemize}
+
+\vspace{6pt}
+
+\roleentry{COMPANY\_2}{TITLE\_2}{LOCATION\_2}{START\_DATE -- END\_DATE}
+\begin{itemize}
+  \item IMPACT\_BULLET\_1
+  \item IMPACT\_BULLET\_2
+  \item IMPACT\_BULLET\_3
+\end{itemize}
+
+\vspace{6pt}
+
+\roleentry{COMPANY\_3}{TITLE\_3}{LOCATION\_3}{START\_DATE -- END\_DATE}
+\begin{itemize}
+  \item IMPACT\_BULLET\_1
+  \item IMPACT\_BULLET\_2
+\end{itemize}
+
+% ---- SELECTED PROJECTS -------------------------------------
+\section{Selected Projects}  % Remove if experience covers it
+
+\projectentry{PROJECT\_NAME\_1}{TECH\_STACK}{}
+\begin{itemize}
+  \item WHAT\_IT\_DOES + IMPACT\_OR\_METRICS
+  \item JD\_RELEVANT\_TECHNICAL\_DETAIL
+\end{itemize}
+
+\vspace{4pt}
+
+\projectentry{PROJECT\_NAME\_2}{TECH\_STACK}{https://github.com/USERNAME/REPO}
+\begin{itemize}
+  \item WHAT\_IT\_DOES + IMPACT\_OR\_METRICS
+\end{itemize}
+
+% ---- EDUCATION ---------------------------------------------
+\section{Education}
+
+\textbf{DEGREE, FIELD} \hfill YEAR\\
+\textit{UNIVERSITY NAME} \hfill City, Country
+
+% Optional: relevant coursework, thesis, GPA if strong
+% \textit{Relevant coursework:} COURSE\_1, COURSE\_2
+
+% ---- PUBLICATIONS / TALKS (optional) -----------------------
+% Remove this section if not applicable
+
+\section{Publications \& Talks}
+
+\begin{itemize}
+  \item ``PAPER OR TALK TITLE,'' \textit{VENUE}, YEAR.
+    [\href{URL}{link}]
+\end{itemize}
+
+% ---- CERTIFICATIONS (optional) ----------------------------
+% \section{Certifications}
+% \begin{itemize}[leftmargin=0em, label={}]
+%   \item CERT\_NAME — ISSUER, YEAR
+% \end{itemize}
+
+% ============================================================
+\end{document}
+% ============================================================
