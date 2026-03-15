@@ -623,8 +623,49 @@ If you created your profile before multi-profile support, running `/setup` again
 - **Not ready yet?** Run `/skill-gap` to benchmark your skills against a target role and build a development plan. Re-run periodically to track progress.
 - **Full lifecycle.** `/build-profile` → `/job-search` or `/swot-analysis` → `/should-i-apply` → `/ats-check` → `/apply` (tailors resume + cover letter + tracks) → `/skill-gap` (if gaps found) → `/mock-interview` → `/interview-feedback` (per round) → `/comp-research` → `/offer-negotiation` → `/player-card` if you want to send something impressive.
 
+## Capabilities & Known Limitations
+
+This toolkit is a research and document-generation assistant — not a fully automated job application bot. Understanding what it does and doesn't do well will help you use it effectively.
+
+### What works well
+
+| Capability | Confidence | Notes |
+|---|---|---|
+| Profile building from resume + GitHub | High | Deep `gh` CLI repo analysis, web research, structured candidate interview |
+| ATS keyword audit | High | Follows real ATS mechanics — keyword tiers, formatting rules, 0–100 score with fix list |
+| Resume tailoring (LaTeX) | High | Keyword mapping + template population; quality scales with profile detail |
+| Cover letter generation | High | Hook → why them → why you → CTA; requires genuine company research detail |
+| Should-I-Apply analysis | High | Sentiment-driven SWOT with failure risks tied to your stated priorities |
+| Interview prep | High | Company-researched Q&A with answer frameworks from your actual experience |
+| Job search (Ashby/Greenhouse) | Good | Public APIs are stable and well-documented; returns all open roles per board |
+| Date + region filtering | Good | Post-fetch filtering logic is correct; `remoteRegion` inference is heuristic |
+| Comp research | Moderate | Relies on scraped data (levels.fyi, Glassdoor) — quality depends on data availability |
+
+### Known gaps and limitations
+
+**LinkedIn job search is unreliable.** LinkedIn actively blocks automated access. Web search queries for `site:linkedin.com/jobs` find some URLs but not systematically. Treat LinkedIn results as supplementary, not primary.
+
+**Greenhouse posting dates are approximate.** The public Greenhouse API returns `updated_at`, not the original publish date. A job updated today may have been posted months ago. The `Posted within` filter will include false positives for Greenhouse boards.
+
+**PDF resume parsing has limits.** Claude extracts text from PDFs, but complex layouts (multi-column, tables, custom fonts, embedded graphics) may produce garbled or incomplete extraction. Plain-text or `.tex` source files give the best results.
+
+**LaTeX requires local compilation.** Resume and cover letter outputs are `.tex` source files. You need TeX Live / MacTeX installed (`brew install --cask mactex-no-gui`) or an online compiler like [Overleaf](https://overleaf.com) to produce PDFs.
+
+**GitHub skill depth is inferred, not measured.** The profile builder cross-references claimed skills against repo languages and topics, but it can't distinguish "wrote 5 lines once" from "built a production service." Star count and commit frequency are weak proxies for proficiency.
+
+**No application submission.** The `/apply` command prepares a complete application package but cannot submit it. ATS portals (Greenhouse, Workday, Lever) require browser interaction, auth, and form-filling. You still upload the PDF and fill the fields manually.
+
+**Rate limiting on ATS APIs.** Ashby and Greenhouse public APIs are unauthenticated and may throttle aggressive bulk fetching. Large watchlists (20+ companies) may hit limits during a single `/job-search` run.
+
+### Best use of this toolkit
+
+The highest-value workflow is: **`/build-profile` → `/ats-check` → `/tailor-resume` → `/apply`** for a specific target role. The ATS audit + tailored LaTeX resume is the strongest piece — most applicants skip this entirely and wonder why they don't hear back.
+
+Job *discovery* via `/job-search` is useful for watchlist companies with Ashby/Greenhouse boards but treat it as a research assistant, not a fully automated pipeline.
+
 ## Requirements
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
 - For `/player-card` deployment: Cloudflare account, Wrangler CLI, custom domain, Resend API key
+- For LaTeX resume/cover letter compilation: TeX Live or MacTeX (`brew install --cask mactex-no-gui`), or use [Overleaf](https://overleaf.com)
 - For all other commands: no infrastructure needed — outputs are local markdown files
