@@ -92,6 +92,85 @@ Per-company filter overrides (optional — replaces global for this company only
 
 -->
 
+## Job Boards
+
+Custom job sites to include in every search. Add any site here once — it will be searched on every future run automatically.
+
+For each board, the agent uses `site:[domain] [keywords]` in web search queries and fetches matching listing pages directly. If the site has a known API or structured URL pattern, note it and the agent will prefer that over plain web search.
+
+<!-- Built-in boards (always included when Web Search is enabled):
+  LinkedIn Jobs     site:linkedin.com/jobs
+  Wellfound         site:wellfound.com
+  Lever             site:jobs.lever.co
+  Ashby             site:jobs.ashbyhq.com
+  Greenhouse        site:boards.greenhouse.io / site:job-boards.greenhouse.io
+-->
+
+<!-- HOW TO ADD A BOARD
+Copy one of the examples below and fill in the fields:
+
+- **Name:**        Human-readable name (e.g., "Remote.com")
+- **Domain:**      The domain to search (e.g., remote.com)
+- **Search URL:**  Direct search URL pattern with {keywords} placeholder if available
+                   e.g., https://remote.com/jobs?search={keywords}
+                   Leave blank to use site: web search only
+- **Tags:**        Optional — categorise the board (remote-only, web3, security, startup, etc.)
+                   Used to auto-enable the board only when relevant role keywords match
+- **Enabled:**     yes / no (quick toggle without deleting the entry)
+- **Notes:**       Anything useful — quality signal, signup required, region bias, etc.
+-->
+
+### Example boards (disabled by default — set Enabled: yes to activate)
+
+<!-- Remote-focused boards
+- **Name:** Remote.com
+- **Domain:** remote.com
+- **Search URL:** https://remote.com/jobs?search={keywords}
+- **Tags:** remote-only
+- **Enabled:** no
+- **Notes:** Strong for fully remote roles, global employers
+
+- **Name:** RemoteOK
+- **Domain:** remoteok.com
+- **Search URL:** https://remoteok.com/remote-{keywords}-jobs
+- **Tags:** remote-only, startup
+- **Enabled:** no
+- **Notes:** Good for startup and indie company remote roles
+
+- **Name:** We Work Remotely
+- **Domain:** weworkremotely.com
+- **Search URL:** https://weworkremotely.com/remote-jobs/search?term={keywords}
+- **Tags:** remote-only
+- **Enabled:** no
+
+Web3 / Crypto boards
+- **Name:** CryptoJobsList
+- **Domain:** cryptojobslist.com
+- **Search URL:** https://cryptojobslist.com/search#searchQuery={keywords}
+- **Tags:** web3, crypto, blockchain
+- **Enabled:** no
+
+- **Name:** web3.career
+- **Domain:** web3.career
+- **Search URL:** https://web3.career/{keywords}-jobs
+- **Tags:** web3, blockchain
+- **Enabled:** no
+
+Security / InfoSec boards
+- **Name:** CyberSecJobs
+- **Domain:** cybersecjobs.com
+- **Search URL:**
+- **Tags:** security, infosec
+- **Enabled:** no
+
+AI / ML boards
+- **Name:** AIJobs.net
+- **Domain:** aijobs.net
+- **Search URL:** https://aijobs.net/?s={keywords}
+- **Tags:** ai, ml
+- **Enabled:** no
+-->
+
 ## Web Search
 
 Web-based job discovery. When enabled, `/job-search` searches the web for matching jobs in addition to (or instead of) searching company ATS boards. This lets you find roles without specifying companies.

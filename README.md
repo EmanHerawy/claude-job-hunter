@@ -262,6 +262,8 @@ All arguments are optional. Three search modes:
 
 **Watchlist:** Edit `WATCHLIST.md` to save your target companies, board tokens, and filter preferences. Global filters apply to all companies; per-company overrides let you customize. Set platform to `auto` for automatic ATS discovery. Enable the `## Web Search` section to discover new companies automatically via web search.
 
+**Custom Job Boards:** Add any job site once to the `## Job Boards` section of `WATCHLIST.md` — it will be searched on every future run automatically. Each board entry takes a `Name`, `Domain`, optional `Search URL` with a `{keywords}` placeholder (used for direct URL-based fetching), `Tags` (for auto-activation when role keywords match), and an `Enabled` toggle. Built-in boards (LinkedIn, Wellfound, Lever, Ashby, Greenhouse) are always included when web search is on. To add a board like Remote.com, copy the template block from the `## Job Boards` section and set `Enabled: yes`.
+
 ### `/should-i-apply`
 
 **Purpose:** Decide if a role is worth pursuing before investing time in applications.

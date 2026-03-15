@@ -74,13 +74,20 @@ Execute these phases in order. Present findings to the user after each phase for
    - Parse `Posted within` — read as a plain integer (number of days). Compute cutoff: `now − N days`. Store as absolute ISO 8601 cutoff date. Example: `14` → cutoff = today − 14 days. Blank = no cutoff.
    - Parse `Region` — split comma-separated values; resolve each to a named region or country. Store as an include list (e.g., `["EMEA", "UK"]`).
    - Parse `Exclude region` — split comma-separated values; resolve each to a named region or country. Store as an exclude list (e.g., `["USA", "China"]`). A job is dropped if it matches ANY entry in the exclude list, regardless of what `Region` says.
-7. Read the `## Web Search` section from the watchlist (if it exists) for web discovery config
-8. **Determine search mode:**
+7. Read the `## Job Boards` section from the watchlist and build the custom boards list:
+   - Parse every entry with `Enabled: yes`
+   - For each enabled board, store: `name`, `domain`, `searchUrl` (may be blank), `tags`
+   - Tag-based activation: if a board has tags (e.g., `web3`, `security`, `remote-only`) and none of the active role keywords are related to that domain, note the board but don't auto-activate it — list it in the search plan as "available but not tag-matched"
+   - Boards with no tags are always included when enabled
+   - Built-in boards (LinkedIn, Wellfound, Lever, Ashby, Greenhouse) are always searched regardless of this section when Web Search is active
+8. Read the `## Web Search` section from the watchlist (if it exists) for web discovery config
+9. **Determine search mode:**
    - If the merged company list is NOT empty → **ATS mode**. Also check if watchlist `## Web Search` has `Enabled: yes` — if so, use **combined mode** (ATS + web discovery).
    - If the merged company list IS empty AND role keywords were provided (from args or watchlist filters) → **web discovery mode**
    - If the merged company list IS empty AND no role keywords AND watchlist has `## Web Search` section with `Enabled: yes` and `Role queries:` → **web discovery mode** using those queries
    - If the merged company list IS empty AND no role keywords AND no web search config → tell the user: "No companies or role keywords provided. Options: (1) pass role keywords: `/job-search \"\" \"security engineer\"`, (2) add companies to your watchlist, (3) enable `## Web Search` in your watchlist with role queries." Then stop.
-9. Present the search plan to the user:
+   - Custom boards from `## Job Boards` are always searched in addition to the above when they are enabled, regardless of mode.
+10. Present the search plan to the user:
 
 ```
 Job Search Plan
@@ -97,6 +104,10 @@ Employment type: [list or "any"]
 Posted within: [e.g., "14 days (cutoff: 2026-03-01)" or "any"]
 Region: [e.g., "EMEA, UK" or "any"]
 Exclude region: [e.g., "USA, China" or "none"]
+
+Custom job boards: [list of enabled boards, or "none"]
+  ✅ [board name] ([domain]) [tags]
+  ⏭  [board name] — tag not matched to current role keywords
 
 Previously searched: [count from log] jobs already in log
 ```
@@ -124,6 +135,17 @@ Build queries by combining role keywords with active filter dimensions (modality
 **Tier 2 — General job boards:**
 - `"{keyword}" {modality} {location} site:linkedin.com/jobs`
 - `"{keyword}" {modality} {location} site:wellfound.com`
+
+**Tier 2b — Custom job boards (from `## Job Boards` in WATCHLIST.md):**
+
+For each enabled custom board:
+- If the board has a `searchUrl` with `{keywords}` placeholder:
+  → Construct the direct URL: replace `{keywords}` with the URL-encoded role keyword
+  → Use WebFetch on the constructed URL to get listings
+  → Example: `https://remote.com/jobs?search=security+engineer`
+- If the board has no `searchUrl` (or it's blank):
+  → Use web search: `"{keyword}" {modality} {location} site:{domain}`
+- Apply active filters (modality, region, date) to results the same way as built-in boards
 
 **Tier 3 — Open web career pages:**
 - `"{keyword}" careers OR jobs {modality} {location} {current_year}`
@@ -588,6 +610,7 @@ Prepend (not append) the new run section so the most recent search is always at 
 **Search parameters:**
 - Companies (ATS): [list or "none"]
 - Web search queries: [list or "none"]
+- Custom job boards searched: [list of board names, or "none"]
 - Role keywords: [list]
 - Filters: [summary of active filters]
 
