@@ -121,6 +121,10 @@ Commands to install:
 - `build-profile.md` — `/build-profile`
 - `job-search.md` — `/job-search`
 - `should-i-apply.md` — `/should-i-apply`
+- `ats-check.md` — `/ats-check`
+- `tailor-resume.md` — `/tailor-resume`
+- `tailor-cover-letter.md` — `/tailor-cover-letter`
+- `apply.md` — `/apply`
 - `mock-interview.md` — `/mock-interview`
 - `interview-feedback.md` — `/interview-feedback`
 - `comp-research.md` — `/comp-research`

@@ -19,13 +19,40 @@ AI-powered job search toolkit using [Claude Code](https://docs.anthropic.com/en/
 
 All commands use live web research to produce outputs specific to you and the target company — no generic templates.
 
+## Prerequisites
+
+Before using this toolkit you need:
+
+1. **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** — the Anthropic CLI. Install it with:
+   ```bash
+   npm install -g @anthropic-ai/claude-code
+   ```
+   Then authenticate: `claude` → follow the login prompt. Claude Code is what runs all the slash commands — without it nothing here will work.
+
+2. **An Anthropic account** with Claude Code access. Sign up at [claude.ai](https://claude.ai).
+
+3. **Git** — to clone this repo.
+
+4. **For LaTeX resume/cover letter compilation** (optional but recommended):
+   - macOS: `brew install --cask mactex-no-gui`
+   - Linux: `sudo apt install texlive-full`
+   - Or use [Overleaf](https://overleaf.com) — upload the `.tex` file, compile online, download PDF
+
+5. **For `/player-card` deployment** (optional): Cloudflare account, Wrangler CLI, custom domain, Resend API key.
+
+Everything else (profile, evaluations, applications) is saved as local markdown and LaTeX files — no other infrastructure needed.
+
+---
+
 ## Quick Start
 
-### 1. Clone and configure
+### 1. Clone
 
 ```bash
 git clone https://github.com/deeso/claude-job-hunter.git ~/claude-job-hunter
 ```
+
+> Using your own fork? Replace the URL with your fork's URL. The rest of the setup is identical.
 
 ### 2. Install the slash commands
 
@@ -42,18 +69,19 @@ Then open Claude Code and run:
 # Use the repo directory for everything (simple)
 /setup
 
-# Or specify a custom working directory for your personal data
+# Or specify a separate working directory for your personal data
 /setup "~/job-search"
 ```
 
-This symlinks all skills into `~/.claude/commands/`, creates output directories, and writes a config file (`~/.claude/.claude-job-hunter.conf`) so all skills know where to find your data. You only need to do this once (or again after pulling updates that add new commands).
+`/setup` symlinks all 14 commands into `~/.claude/commands/`, creates output directories (`profile/`, `evaluations/`, `applications/`), and writes `~/.claude/.claude-job-hunter.conf` so every command knows where to find your data.
 
-To remove everything later, run `/uninstall` — it removes symlinks and config but leaves your personal data intact.
+Run `/setup` again after `git pull` to pick up new commands.
+Run `/uninstall` to remove all symlinks and config (your personal data is preserved).
 
-Using a custom working directory keeps your personal data (profile, evaluations, cards) separate from the repo — useful if you want to keep the repo clean for `git pull` updates.
+> **Custom working directory:** Using `~/job-search` (or any path outside the repo) keeps your personal data — profile, evaluations, applications — separate from the repo. This lets you `git pull` updates without merge conflicts in your data.
 
 <details>
-<summary>Manual installation (alternative)</summary>
+<summary>Manual installation (if /setup doesn't work)</summary>
 
 ```bash
 mkdir -p ~/.claude/commands
@@ -75,15 +103,37 @@ ln -sf ~/claude-job-hunter/commands/uninstall.md ~/.claude/commands/uninstall.md
 
 ### 3. Build your candidate profile
 
-Run `/build-profile` to generate your profile automatically from your resume, GitHub, and evidence:
+Every command draws from your candidate profile. Build it once, update it as your experience grows.
 
 ```
 /build-profile "~/resume.pdf" "~/evidence/" "https://linkedin.com/in/your-profile" "your-github-username"
 ```
 
-Or edit your profile (e.g., `profile/default.md`) manually using `profile/candidate-profile.md` as the template. Your profile is the core data source all commands use. The more honest and specific you are (especially the "Honest Considerations" section), the better the outputs.
+The agent reads your resume, analyzes your GitHub repos (languages, projects, commit patterns), searches your public web presence (publications, talks, patents), then asks you a structured set of questions — career narrative, biggest impact stories, honest weaknesses, deal-breakers, what you're optimizing for. All of this feeds every downstream command.
 
-### 4. Use them
+You can also edit `profile/default.md` manually using `profile/candidate-profile.md` as the template, but running `/build-profile` is faster and more thorough.
+
+> **The honest section matters.** The "Honest Considerations" block (weaknesses, what drains you, tenure risks) is what makes SWOT analysis and interview prep useful rather than generic. The more accurate it is, the better the outputs.
+
+### 4. First-run workflow (recommended order)
+
+```
+# Step 1 — Build your profile (once, update when things change)
+/build-profile "~/resume.pdf" "" "https://linkedin.com/in/you" "your-github"
+
+# Step 2 — Find a job (search ATS boards) or paste a specific JD you found
+/job-search "Anthropic, Cloudflare" "security, platform"
+
+# Step 3 — Decide if it's worth applying
+/should-i-apply "~/resume.pdf" "Anthropic" "Security Engineer" "https://job-url.com"
+
+# Step 4 — Apply (ATS audit + tailored resume + cover letter in one command)
+/apply "https://job-url.com"
+# or paste the JD text directly:
+/apply "Senior Security Engineer at Anthropic, requires Rust, Python, threat modeling..."
+```
+
+### 5. All available commands
 
 Open Claude Code and run:
 
