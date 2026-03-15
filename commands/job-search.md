@@ -71,6 +71,9 @@ Execute these phases in order. Present findings to the user after each phase for
    - Role keywords from arguments (second quoted string, comma-separated)
    - Global filters from watchlist `## Search Filters` section
    - Per-company filter overrides from watchlist (if a company entry has its own `Filters:` line)
+   - Parse `Posted within` — read as a plain integer (number of days). Compute cutoff: `now − N days`. Store as absolute ISO 8601 cutoff date. Example: `14` → cutoff = today − 14 days. Blank = no cutoff.
+   - Parse `Region` — split comma-separated values; resolve each to a named region or country. Store as an include list (e.g., `["EMEA", "UK"]`).
+   - Parse `Exclude region` — split comma-separated values; resolve each to a named region or country. Store as an exclude list (e.g., `["USA", "China"]`). A job is dropped if it matches ANY entry in the exclude list, regardless of what `Region` says.
 7. Read the `## Web Search` section from the watchlist (if it exists) for web discovery config
 8. **Determine search mode:**
    - If the merged company list is NOT empty → **ATS mode**. Also check if watchlist `## Web Search` has `Enabled: yes` — if so, use **combined mode** (ATS + web discovery).
@@ -91,6 +94,9 @@ Description keywords: [list]
 Work modality: [list or "any"]
 Location: [list or "any"]
 Employment type: [list or "any"]
+Posted within: [e.g., "14 days (cutoff: 2026-03-01)" or "any"]
+Region: [e.g., "EMEA, UK" or "any"]
+Exclude region: [e.g., "USA, China" or "none"]
 
 Previously searched: [count from log] jobs already in log
 ```
@@ -123,6 +129,18 @@ Build queries by combining role keywords with active filter dimensions (modality
 - `"{keyword}" careers OR jobs {modality} {location} {current_year}`
 
 Where `{modality}` and `{location}` come from active filters (omit if "any").
+
+**Date filter in web queries:** If `Posted within` is set, append a time qualifier to Tier 2 and Tier 3 queries where supported:
+- LinkedIn: append `&f_TPR=r[seconds]` to LinkedIn Jobs URLs where seconds = N × 86400 (e.g., 7 days → `r604800`, 14 days → `r1209600`, 30 days → `r2592000`)
+- General web queries: append `after:[YYYY-MM-DD]` using the computed cutoff date (e.g., `after:2026-03-01`)
+- ATS API boards (Ashby/Greenhouse): these return all jobs; apply date filter in Phase 3c after fetching
+
+**Region filter in web queries:** Append region terms to queries where applicable:
+- `Region: EMEA` → add `"Europe" OR "EMEA" OR "UK" OR "Remote EMEA"` to Tier 3 queries
+- `Region: USA` → add `"United States" OR "Remote US"` to queries
+- `Exclude region: USA` → add `-"US only" -"United States only" -"must be based in US"` to queries
+- `Exclude region: [country]` → add `-"[country] only" -"[country]-based"` for each excluded entry
+- `Region: Global` → add `"remote worldwide" OR "remote global" OR "anywhere"` to queries
 
 **Query limits:** At most 4 Tier 1 queries per keyword (one per ATS platform), 2 Tier 2 per keyword, 1 Tier 3 per keyword. If 3+ role keywords, prioritize the first two for Tier 2 and 3.
 
@@ -326,6 +344,20 @@ Convert API responses and web-discovered jobs to a unified format for filtering:
 | `company` | (from search plan) | (from search plan) | Extracted from page |
 | `platform` | `ashby` | `greenhouse` | `lever`, `workday`, `web`, etc. |
 | `source` | `ats-api` | `ats-api` | `web-search` or `web-search → ashby` / `web-search → greenhouse` |
+| `postedAt` | `publishedDate` (ISO 8601) | `first_published_at` or `updated_at` | Extracted from page if present; `null` otherwise |
+| `remoteRegion` | Infer from description text | Infer from description text | Infer from description text |
+
+**`remoteRegion` inference** (applied to all jobs where `workplaceType` = `Remote` or `Hybrid`):
+Scan the job title + description for restriction language:
+- `"US only"`, `"United States only"`, `"must be based in US"`, `"US citizens"` → `US_ONLY`
+- `"EU only"`, `"Europe only"`, `"must reside in Europe"`, `"EEA"` → `EU_ONLY`
+- `"EMEA"` mentioned as work location → `EMEA`
+- `"worldwide"`, `"globally"`, `"anywhere"`, no restriction mentioned → `GLOBAL`
+- `"Canada"` mentioned as restriction → `CANADA_ONLY`
+- `"UK only"`, `"United Kingdom only"` → `UK_ONLY`
+- Ambiguous or not determinable → `UNKNOWN`
+
+If `workplaceType` is `OnSite` or `Hybrid`, set `remoteRegion` to `null` (not applicable; use `location` for region matching instead).
 
 For web-discovered jobs that were pivoted to ATS API (found via web search, fetched via Ashby/Greenhouse API), set `source` to `web-search → {platform}`.
 
@@ -344,13 +376,55 @@ Filters are applied as **AND across dimensions, OR within each dimension**:
 - **Work modality** → exact match on `workplaceType` (`Remote`, `Hybrid`, `OnSite`). If multiple values, match ANY.
 - **Location** → case-insensitive substring match on `location` + `secondaryLocations`. If multiple locations, match ANY.
 - **Employment type** → normalized match on `employmentType`. Map variants: `FullTime`/`Full-time`/`Full Time` → `FullTime`, etc. If multiple types, match ANY.
+- **Posted within** → compare `postedAt` against cutoff datetime. Rules:
+  - `postedAt` is after cutoff (recent enough) → **PASS**
+  - `postedAt` is before cutoff (too old) → **FILTERED OUT**
+  - `postedAt` is `null` (unknown) → **INCLUDE** but mark result with `⚠️ date unknown`
+  - If `Posted within` filter is not set → skip (match all regardless of date)
+- **Region (include)** and **Exclude region** → two separate fields, evaluated in order:
+
+  **Step 1 — Exclusion (runs first, takes priority):**
+  If `Exclude region` has values, drop the job if it matches ANY excluded entry.
+  - Remote jobs: check `remoteRegion` (e.g., `Exclude region: USA` → drop if `remoteRegion = US_ONLY`)
+  - OnSite/Hybrid: check `location` + `secondaryLocations` against the excluded country/region list
+  - If `remoteRegion` is `UNKNOWN` and excluded region is `USA`: **flag ⚠️, do not silently drop** — show to user
+  - Multiple exclusions: `Exclude region: USA, China, Russia` → drop if job matches ANY of them
+
+  **Step 2 — Inclusion (only if `Region` is set):**
+  Job must match at least one entry in `Region` (OR logic across entries). If `Region` is blank, skip this step.
+
+  For **Remote jobs** (`workplaceType = Remote`) — match against `remoteRegion`:
+  | Include region | Passes if remoteRegion is... |
+  |---|---|
+  | `USA` | `US_ONLY`, `GLOBAL`, or `UNKNOWN` |
+  | `UK` | `UK_ONLY`, `EU_ONLY`, `EMEA`, `GLOBAL`, or `UNKNOWN` |
+  | `EMEA` | `EMEA`, `EU_ONLY`, `UK_ONLY`, `GLOBAL`, or `UNKNOWN` |
+  | `Europe` | `EU_ONLY`, `EMEA`, `GLOBAL`, or `UNKNOWN` |
+  | `APAC` | `GLOBAL` or `UNKNOWN` |
+  | `Canada` | `CANADA_ONLY`, `GLOBAL`, or `UNKNOWN` |
+  | `Global` | `GLOBAL` or `UNKNOWN` |
+  | Country name | `GLOBAL` or `UNKNOWN` (or extractable country-specific tag) |
+
+  For **OnSite/Hybrid jobs** — match `location` + `secondaryLocations` against country list:
+  - `USA` → "United States", "US", "USA", any US state name or abbreviation (CA, NY, TX…)
+  - `UK` → "United Kingdom", "UK", "England", "Scotland", "Wales", "London", "Manchester"…
+  - `EMEA` → any European, Middle Eastern, or African country or major city
+  - `Europe` → EU27 + UK + Norway + Switzerland + Iceland
+  - `APAC` → Australia, NZ, Japan, South Korea, Singapore, India, HK, Taiwan, China, Indonesia, Malaysia, Thailand, Philippines
+  - `LATAM` → Brazil, Mexico, Argentina, Colombia, Chile, Peru, and others
+  - `Global` → matches everything
+  - Individual country/city name → case-insensitive substring match on location
 
 If a filter dimension is empty/unset, skip it (match all).
 
-Example: Role keywords = `["security", "platform"]` AND Work modality = `["Remote"]` means:
-- Title must contain "security" OR "platform"
-- AND workplaceType must be "Remote"
-- AND all other unset filters are ignored
+**Filter summary example:**
+```
+Posted within:  14  (cutoff: 2026-03-01)
+Work modality:  Remote
+Region:         EMEA, Global
+Exclude region: USA, China
+```
+Result: Remote jobs open to EMEA or worldwide, excluding US-only and China-only, posted within the last 14 days.
 
 #### 3d. Deduplicate Against Search Log
 
@@ -369,16 +443,22 @@ Job Search Results — [date]
 
 [N] matches found across [M] companies ([X] new, [Y] previously seen)
 Sources: [N] from ATS API, [N] from web search
+Filters: posted within [14d] | region [EMEA, Global] | remote only
 
- #  | Status | Company     | Title                  | Location        | Type   | Source
-----|--------|-------------|------------------------|-----------------|--------|--------
- 1  | NEW    | Anthropic   | Security Engineer      | SF (Remote OK)  | Full   | web → ashby
- 2  | NEW    | Anthropic   | Platform Engineer      | NYC             | Full   | web → ashby
- 3  | SEEN   | Cloudflare  | Security Architect     | Remote          | Full   | ats-api
- 4  | NEW    | StartupX    | Staff Security Eng     | Remote          | Full   | lever
+ #  | Status | Company     | Title                  | Location             | Posted      | Type | Source
+----|--------|-------------|------------------------|----------------------|-------------|------|--------
+ 1  | NEW    | Anthropic   | Security Engineer      | Remote (Worldwide)   | 3 days ago  | Full | web → ashby
+ 2  | NEW    | Anthropic   | Platform Engineer      | Remote (EU only)     | 8 days ago  | Full | web → ashby
+ 3  | SEEN   | Cloudflare  | Security Architect     | Remote (US only)     | 2026-02-10  | Full | ats-api
+ 4  | NEW    | StartupX    | Staff Security Eng     | London, UK           | ⚠️ unknown  | Full | lever
 
-Filtered out: [N] jobs didn't match filters
+Filtered out: [N] jobs — [N] too old, [N] wrong region, [N] wrong modality
 ```
+
+Notes on the results display:
+- **Posted** column: show relative time ("3 days ago", "2 weeks ago") if recent; ISO date if older; "⚠️ unknown" if `postedAt` is null
+- **Location** column: for Remote jobs, append `remoteRegion` in parentheses if determinable: `Remote (US only)`, `Remote (EU only)`, `Remote (Worldwide)`, `Remote (⚠️ region unknown)`
+- **Filtered out** breakdown: list how many were removed by each active filter so the user can tune them
 
 If no matches found, report and offer to adjust filters.
 
